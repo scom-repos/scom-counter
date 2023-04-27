@@ -71,7 +71,7 @@ declare module "@scom/scom-counter" {
     }
     export default class ScomCounter extends Module implements PageBlock {
         private vStackCounter;
-        private hStackInfo;
+        private vStackInfo;
         private loadingElm;
         private lbTitle;
         private lbDescription;

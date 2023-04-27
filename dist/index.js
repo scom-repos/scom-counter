@@ -313,13 +313,16 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
         formatCounter(num, decimals) {
             return index_1.formatNumberWithSeparators(num, decimals);
         }
-        renderCounter() {
+        renderCounter(resize) {
             if (!this.counterElm && this._data.options)
                 return;
             const { title, description, counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, coloredNegativeValues, coloredPositiveValues } = this._data.options;
             this.lbTitle.caption = title;
             this.lbDescription.caption = description;
-            this.counterElm.height = `calc(100% - ${this.hStackInfo.offsetHeight + 30}px)`;
+            this.lbDescription.visible = !!description;
+            this.counterElm.height = `calc(100% - ${this.vStackInfo.offsetHeight + 10}px)`;
+            if (resize)
+                return;
             this.counterElm.clearInnerHTML();
             if (this.counterData && this.counterData.length) {
                 const value = this.counterData[0][counterColName];
@@ -353,7 +356,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             }
         }
         resizeCounter() {
-            this.renderCounter();
+            this.renderCounter(true);
         }
         async init() {
             this.isReadyCallbackQueued = true;
@@ -377,13 +380,13 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             });
         }
         render() {
-            return (this.$render("i-vstack", { id: "vStackCounter", position: "relative", background: { color: Theme.background.main }, gap: 20, height: "100%", padding: { top: 10, bottom: 10, left: 10, right: 10 }, class: index_css_1.containerStyle },
+            return (this.$render("i-vstack", { id: "vStackCounter", position: "relative", background: { color: Theme.background.main }, height: "100%", padding: { top: 10, bottom: 10, left: 10, right: 10 }, class: index_css_1.containerStyle },
                 this.$render("i-vstack", { id: "loadingElm", class: "i-loading-overlay" },
                     this.$render("i-vstack", { class: "i-loading-spinner", horizontalAlignment: "center", verticalAlignment: "center" },
                         this.$render("i-icon", { class: "i-loading-spinner_icon", image: { url: assets_1.default.fullPath('img/loading.svg'), width: 36, height: 36 } }))),
-                this.$render("i-hstack", { id: "hStackInfo", gap: "10", width: "100%", maxWidth: "100%", margin: { left: 'auto', right: 'auto' }, verticalAlignment: "center", wrap: "wrap" },
+                this.$render("i-vstack", { id: "vStackInfo", width: "100%", maxWidth: "100%", margin: { left: 'auto', right: 'auto', bottom: 10 }, verticalAlignment: "center" },
                     this.$render("i-label", { id: "lbTitle", font: { bold: true, color: Theme.text.primary } }),
-                    this.$render("i-label", { id: "lbDescription", font: { color: Theme.text.primary } })),
+                    this.$render("i-label", { id: "lbDescription", margin: { top: 5 }, font: { color: Theme.text.primary } })),
                 this.$render("i-vstack", { id: "counterElm", margin: { top: 16, bottom: 32 }, horizontalAlignment: "center", width: "100%", height: "100%", class: "text-center" })));
         }
     };

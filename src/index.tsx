@@ -32,7 +32,7 @@ declare global {
 @customElements('i-scom-counter')
 export default class ScomCounter extends Module implements PageBlock {
   private vStackCounter: VStack;
-  private hStackInfo: HStack;
+  private vStackInfo: HStack;
   private loadingElm: Panel;
   private lbTitle: Label;
   private lbDescription: Label;
@@ -280,12 +280,14 @@ export default class ScomCounter extends Module implements PageBlock {
     return formatNumberWithSeparators(num, decimals);
   }
 
-  private renderCounter() {
+  private renderCounter(resize?: boolean) {
     if (!this.counterElm && this._data.options) return;
     const { title, description, counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, coloredNegativeValues, coloredPositiveValues } = this._data.options;
     this.lbTitle.caption = title;
     this.lbDescription.caption = description;
-    this.counterElm.height = `calc(100% - ${this.hStackInfo.offsetHeight + 30}px)`;
+    this.lbDescription.visible = !!description;
+    this.counterElm.height = `calc(100% - ${this.vStackInfo.offsetHeight + 10}px)`;
+    if (resize) return;
     this.counterElm.clearInnerHTML();
     if (this.counterData && this.counterData.length) {
       const value = this.counterData[0][counterColName];
@@ -320,7 +322,7 @@ export default class ScomCounter extends Module implements PageBlock {
   }
 
   private resizeCounter() {
-    this.renderCounter();
+    this.renderCounter(true);
   }
 
   async init() {
@@ -351,7 +353,6 @@ export default class ScomCounter extends Module implements PageBlock {
         id="vStackCounter"
         position="relative"
         background={{ color: Theme.background.main }}
-        gap={20}
         height="100%"
         padding={{ top: 10, bottom: 10, left: 10, right: 10 }}
         class={containerStyle}
@@ -364,18 +365,16 @@ export default class ScomCounter extends Module implements PageBlock {
             />
           </i-vstack>
         </i-vstack>
-        <i-hstack
-          id="hStackInfo"
-          gap="10"
+        <i-vstack
+          id="vStackInfo"
           width="100%"
           maxWidth="100%"
-          margin={{ left: 'auto', right: 'auto' }}
+          margin={{ left: 'auto', right: 'auto', bottom: 10 }}
           verticalAlignment="center"
-          wrap="wrap"
         >
           <i-label id="lbTitle" font={{ bold: true, color: Theme.text.primary }} />
-          <i-label id="lbDescription" font={{ color: Theme.text.primary }} />
-        </i-hstack>
+          <i-label id="lbDescription" margin={{ top: 5 }} font={{ color: Theme.text.primary }} />
+        </i-vstack>
         <i-vstack id="counterElm" margin={{ top: 16, bottom: 32 }} horizontalAlignment="center" width="100%" height="100%" class="text-center" />
       </i-vstack>
     )
