@@ -58,7 +58,7 @@ declare module "@scom/scom-counter/assets.ts" {
 /// <amd-module name="@scom/scom-counter" />
 declare module "@scom/scom-counter" {
     import { Module, ControlElement, Container, IDataSchema } from '@ijstech/components';
-    import { PageBlock, ICounterConfig } from "@scom/scom-counter/global/index.ts";
+    import { ICounterConfig } from "@scom/scom-counter/global/index.ts";
     interface ScomCounterElement extends ControlElement {
         data: ICounterConfig;
     }
@@ -69,7 +69,7 @@ declare module "@scom/scom-counter" {
             }
         }
     }
-    export default class ScomCounter extends Module implements PageBlock {
+    export default class ScomCounter extends Module {
         private vStackCounter;
         private vStackInfo;
         private loadingElm;
@@ -88,47 +88,30 @@ declare module "@scom/scom-counter" {
         readonly onEdit: () => Promise<void>;
         static create(options?: ScomCounterElement, parent?: Container): Promise<ScomCounter>;
         constructor(parent?: Container, options?: ScomCounterElement);
-        getData(): ICounterConfig;
-        setData(data: ICounterConfig): Promise<void>;
-        getTag(): any;
-        setTag(value: any): Promise<void>;
-        getConfigSchema(): IDataSchema;
-        onConfigSave(config: any): void;
-        edit(): Promise<void>;
-        confirm(): Promise<void>;
-        discard(): Promise<void>;
-        config(): Promise<void>;
+        private getData;
+        private setData;
+        private getTag;
+        private setTag;
         private getPropertiesSchema;
         private getThemeSchema;
-        getEmbedderActions(): {
+        private _getActions;
+        getConfigurators(): {
             name: string;
-            icon: string;
-            command: (builder: any, userInputData: any) => {
-                execute: () => Promise<void>;
-                undo: () => void;
-                redo: () => void;
-            };
-            userInputDataSchema: IDataSchema;
-        }[];
-        getActions(): {
-            name: string;
-            icon: string;
-            command: (builder: any, userInputData: any) => {
-                execute: () => Promise<void>;
-                undo: () => void;
-                redo: () => void;
-            };
-            userInputDataSchema: IDataSchema;
-        }[];
-        _getActions(propertiesSchema: IDataSchema, themeSchema: IDataSchema): {
-            name: string;
-            icon: string;
-            command: (builder: any, userInputData: any) => {
-                execute: () => Promise<void>;
-                undo: () => void;
-                redo: () => void;
-            };
-            userInputDataSchema: IDataSchema;
+            target: string;
+            getActions: () => {
+                name: string;
+                icon: string;
+                command: (builder: any, userInputData: any) => {
+                    execute: () => Promise<void>;
+                    undo: () => void;
+                    redo: () => void;
+                };
+                userInputDataSchema: IDataSchema;
+            }[];
+            getData: any;
+            setData: any;
+            getTag: any;
+            setTag: any;
         }[];
         private updateStyle;
         private updateTheme;
