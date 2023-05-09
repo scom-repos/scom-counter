@@ -11,7 +11,7 @@ import {
   Styles,
   Panel
 } from '@ijstech/components';
-import { PageBlock, ICounterConfig, formatNumberWithSeparators, callAPI } from './global/index';
+import { ICounterConfig, formatNumberWithSeparators, callAPI } from './global/index';
 import { containerStyle, counterStyle } from './index.css';
 import assets from './assets';
 const Theme = Styles.Theme.ThemeVars;
@@ -30,7 +30,7 @@ declare global {
 
 @customModule
 @customElements('i-scom-counter')
-export default class ScomCounter extends Module implements PageBlock {
+export default class ScomCounter extends Module {
   private vStackCounter: VStack;
   private vStackInfo: HStack;
   private loadingElm: Panel;
@@ -59,72 +59,76 @@ export default class ScomCounter extends Module implements PageBlock {
     super(parent, options);
   }
 
-  getData() {
+  private getData() {
     return this._data;
   }
 
-  async setData(data: ICounterConfig) {
+  private async setData(data: ICounterConfig) {
     this._oldData = this._data;
     this._data = data;
     this.updateCounterData();
   }
 
-  getTag() {
+  private getTag() {
     return this.tag;
   }
 
-  async setTag(value: any) {
-    this.tag = value || {};
+  private async setTag(value: any) {
+    const newValue = value || {};
+    for (let prop in newValue) {
+      if (newValue.hasOwnProperty(prop)) {
+        this.tag[prop] = newValue[prop];
+      }
+    }
     this.width = this.tag.width || 700;
     this.height = this.tag.height || 200;
     this.onUpdateBlock();
   }
 
-  getConfigSchema() {
-    return this.getThemeSchema();
-  }
+  // getConfigSchema() {
+  //   return this.getThemeSchema();
+  // }
 
-  onConfigSave(config: any) {
-    this.tag = config;
-    this.onUpdateBlock();
-  }
+  // onConfigSave(config: any) {
+  //   this.tag = config;
+  //   this.onUpdateBlock();
+  // }
 
-  async edit() {
-    // this.vStackCounter.visible = false
-  }
+  // async edit() {
+  //   // this.vStackCounter.visible = false
+  // }
 
-  async confirm() {
-    this.onUpdateBlock();
-    // this.vStackCounter.visible = true
-  }
+  // async confirm() {
+  //   this.onUpdateBlock();
+  //   // this.vStackCounter.visible = true
+  // }
 
-  async discard() {
-    // this.vStackCounter.visible = true
-  }
+  // async discard() {
+  //   // this.vStackCounter.visible = true
+  // }
 
-  async config() { }
+  // async config() { }
 
   private getPropertiesSchema(readOnly?: boolean) {
     const propertiesSchema = {
       type: 'object',
+      required: ['apiEndpoint'],
       properties: {
         apiEndpoint: {
-          type: 'string',
-          required: true
+          type: 'string'
         },
         options: {
           type: 'object',
+          required: ['title', 'counterColName'],
           properties: {
             title: {
-              type: 'string',
-              required: true
+              type: 'string'
             },
             description: {
               type: 'string'
             },
             counterColName: {
-              type: 'string',
-              required: true
+              type: 'string'
             },
             counterLabel: {
               type: 'string'
@@ -179,15 +183,7 @@ export default class ScomCounter extends Module implements PageBlock {
     return themeSchema as IDataSchema;
   }
 
-  getEmbedderActions() {
-    return this._getActions(this.getPropertiesSchema(true), this.getThemeSchema(true));
-  }
-
-  getActions() {
-    return this._getActions(this.getPropertiesSchema(), this.getThemeSchema());
-  }
-
-  _getActions(propertiesSchema: IDataSchema, themeSchema: IDataSchema) {
+  private _getActions(propertiesSchema: IDataSchema, themeSchema: IDataSchema) {
     const actions = [
       {
         name: 'Settings',
@@ -218,7 +214,7 @@ export default class ScomCounter extends Module implements PageBlock {
           return {
             execute: async () => {
               if (!userInputData) return;
-              this.oldTag = { ...this.tag };
+              this.oldTag = JSON.parse(JSON.stringify(this.tag));
               this.setTag(userInputData);
               if (builder) builder.setTag(userInputData);
             },
@@ -234,6 +230,33 @@ export default class ScomCounter extends Module implements PageBlock {
       }
     ]
     return actions
+  }
+
+  getConfigurators() {
+    return [
+      {
+        name: 'Builder Configurator',
+        target: 'Builders',
+        getActions: () => {
+          return this._getActions(this.getPropertiesSchema(), this.getThemeSchema());
+        },
+        getData: this.getData.bind(this),
+        setData: this.setData.bind(this),
+        getTag: this.getTag.bind(this),
+        setTag: this.setTag.bind(this)
+      },
+      {
+        name: 'Emdedder Configurator',
+        target: 'Embedders',
+        getActions: () => {
+          return this._getActions(this.getPropertiesSchema(true), this.getThemeSchema(true))
+        },
+        getData: this.getData.bind(this),
+        setData: this.setData.bind(this),
+        getTag: this.getTag.bind(this),
+        setTag: this.setTag.bind(this)
+      }
+    ]
   }
 
   private updateStyle(name: string, value: any) {
