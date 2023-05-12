@@ -14,6 +14,7 @@ import {
 import { ICounterConfig, formatNumberWithSeparators, callAPI } from './global/index';
 import { containerStyle, counterStyle } from './index.css';
 import assets from './assets';
+import dataJson from './data.json';
 const Theme = Styles.Theme.ThemeVars;
 
 interface ScomCounterElement extends ControlElement {
@@ -40,9 +41,7 @@ export default class ScomCounter extends Module {
   private counterData: { [key: string]: string | number }[];
   private apiEndpoint = '';
 
-  private _oldData: ICounterConfig = { apiEndpoint: '', options: undefined };
   private _data: ICounterConfig = { apiEndpoint: '', options: undefined };
-  private oldTag: any = {};
   tag: any = {};
   defaultEdit: boolean = true;
   readonly onConfirm: () => Promise<void>;
@@ -64,7 +63,6 @@ export default class ScomCounter extends Module {
   }
 
   private async setData(data: ICounterConfig) {
-    this._oldData = this._data;
     this._data = data;
     this.updateCounterData();
   }
@@ -189,18 +187,18 @@ export default class ScomCounter extends Module {
         name: 'Settings',
         icon: 'cog',
         command: (builder: any, userInputData: any) => {
+          let _oldData: ICounterConfig = { apiEndpoint: '', options: undefined };
           return {
             execute: async () => {
-              if (builder?.setData) {
-                builder.setData(userInputData);
-              }
-              this.setData(userInputData);
+              _oldData = {...this._data};
+              if (userInputData?.apiEndpoint !== undefined) this._data.apiEndpoint = userInputData.apiEndpoint;
+              if (userInputData?.options !== undefined) this._data.options = userInputData.options;
+              if (builder?.setData) builder.setData(this._data);
+              this.setData(this._data);
             },
             undo: () => {
-              if (builder?.setData) {
-                builder.setData(this._oldData);
-              }
-              this.setData(this._oldData);
+              if (builder?.setData) builder.setData(_oldData);
+              this.setData(_oldData);
             },
             redo: () => { }
           }
@@ -211,17 +209,19 @@ export default class ScomCounter extends Module {
         name: 'Theme Settings',
         icon: 'palette',
         command: (builder: any, userInputData: any) => {
+          let oldTag = {};
           return {
             execute: async () => {
               if (!userInputData) return;
-              this.oldTag = JSON.parse(JSON.stringify(this.tag));
-              this.setTag(userInputData);
+              oldTag = JSON.parse(JSON.stringify(this.tag));
               if (builder) builder.setTag(userInputData);
+              else this.setTag(userInputData);
             },
             undo: () => {
               if (!userInputData) return;
-              this.setTag(this.oldTag);
-              if (builder) builder.setTag(this.oldTag);
+              this.tag = JSON.parse(JSON.stringify(oldTag));
+              if (builder) builder.setTag(this.tag);
+              else this.setTag(this.tag);
             },
             redo: () => { }
           }
@@ -241,7 +241,10 @@ export default class ScomCounter extends Module {
           return this._getActions(this.getPropertiesSchema(), this.getThemeSchema());
         },
         getData: this.getData.bind(this),
-        setData: this.setData.bind(this),
+        setData: async (data: ICounterConfig) => {
+          const defaultData = dataJson.defaultBuilderData;
+          await this.setData({...defaultData, ...data});
+        },
         getTag: this.getTag.bind(this),
         setTag: this.setTag.bind(this)
       },
