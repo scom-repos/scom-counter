@@ -55,6 +55,20 @@ declare module "@scom/scom-counter/assets.ts" {
     };
     export default _default;
 }
+/// <amd-module name="@scom/scom-counter/data.json.ts" />
+declare module "@scom/scom-counter/data.json.ts" {
+    const _default_1: {
+        defaultBuilderData: {
+            apiEndpoint: string;
+            options: {
+                title: string;
+                counterColName: string;
+                counterLabel: string;
+            };
+        };
+    };
+    export default _default_1;
+}
 /// <amd-module name="@scom/scom-counter" />
 declare module "@scom/scom-counter" {
     import { Module, ControlElement, Container, IDataSchema } from '@ijstech/components';
@@ -78,9 +92,7 @@ declare module "@scom/scom-counter" {
         private counterElm;
         private counterData;
         private apiEndpoint;
-        private _oldData;
         private _data;
-        private oldTag;
         tag: any;
         defaultEdit: boolean;
         readonly onConfirm: () => Promise<void>;
