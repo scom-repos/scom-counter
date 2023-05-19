@@ -325,7 +325,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                             const utf8String = decodeURIComponent(params.data);
                             const decodedString = window.atob(utf8String);
                             const newData = JSON.parse(decodedString);
-                            let resultingData = Object.assign(Object.assign({}, self._data), { newData });
+                            let resultingData = Object.assign(Object.assign({}, self._data), newData);
                             await this.setData(resultingData);
                         }
                     },
