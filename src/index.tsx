@@ -214,13 +214,13 @@ export default class ScomCounter extends Module {
             execute: async () => {
               if (!userInputData) return;
               oldTag = JSON.parse(JSON.stringify(this.tag));
-              if (builder) builder.setTag(userInputData);
+              if (builder?.setTag) builder.setTag(userInputData);
               else this.setTag(userInputData);
             },
             undo: () => {
               if (!userInputData) return;
               this.tag = JSON.parse(JSON.stringify(oldTag));
-              if (builder) builder.setTag(this.tag);
+              if (builder?.setTag) builder.setTag(this.tag);
               else this.setTag(this.tag);
             },
             redo: () => { }
