@@ -269,7 +269,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                                 if (!userInputData)
                                     return;
                                 oldTag = JSON.parse(JSON.stringify(this.tag));
-                                if (builder)
+                                if (builder === null || builder === void 0 ? void 0 : builder.setTag)
                                     builder.setTag(userInputData);
                                 else
                                     this.setTag(userInputData);
@@ -278,7 +278,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                                 if (!userInputData)
                                     return;
                                 this.tag = JSON.parse(JSON.stringify(oldTag));
-                                if (builder)
+                                if (builder === null || builder === void 0 ? void 0 : builder.setTag)
                                     builder.setTag(this.tag);
                                 else
                                     this.setTag(this.tag);
