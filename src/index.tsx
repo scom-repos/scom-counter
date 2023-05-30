@@ -11,11 +11,33 @@ import {
   Styles,
   Panel
 } from '@ijstech/components';
-import { ICounterConfig, formatNumberWithSeparators, callAPI } from './global/index';
+import { ICounterConfig, formatNumberWithSeparators, callAPI, ICounterOptions } from './global/index';
 import { containerStyle, counterStyle } from './index.css';
 import assets from './assets';
 import dataJson from './data.json';
 const Theme = Styles.Theme.ThemeVars;
+
+const options = {
+  type: 'object',
+  required: ['counterColName'],
+  properties: {
+    counterColName: {
+      type: 'string'
+    },
+    counterLabel: {
+      type: 'string'
+    },
+    stringDecimal: {
+      type: 'number'
+    },
+    stringPrefix: {
+      type: 'string'
+    },
+    stringSuffix: {
+      type: 'string'
+    }
+  }
+}
 
 interface ScomCounterElement extends ControlElement {
   data: ICounterConfig
@@ -41,7 +63,7 @@ export default class ScomCounter extends Module {
   private counterData: { [key: string]: string | number }[];
   private apiEndpoint = '';
 
-  private _data: ICounterConfig = { apiEndpoint: '', options: undefined };
+  private _data: ICounterConfig = { apiEndpoint: '', title: '', options: undefined };
   tag: any = {};
   defaultEdit: boolean = true;
   readonly onConfirm: () => Promise<void>;
@@ -83,71 +105,56 @@ export default class ScomCounter extends Module {
     this.onUpdateBlock();
   }
 
-  // getConfigSchema() {
-  //   return this.getThemeSchema();
-  // }
-
-  // onConfigSave(config: any) {
-  //   this.tag = config;
-  //   this.onUpdateBlock();
-  // }
-
-  // async edit() {
-  //   // this.vStackCounter.visible = false
-  // }
-
-  // async confirm() {
-  //   this.onUpdateBlock();
-  //   // this.vStackCounter.visible = true
-  // }
-
-  // async discard() {
-  //   // this.vStackCounter.visible = true
-  // }
-
-  // async config() { }
-
-  private getPropertiesSchema(readOnly?: boolean) {
+  private getPropertiesSchema() {
     const propertiesSchema = {
       type: 'object',
-      required: ['apiEndpoint'],
+      required: ['apiEndpoint', 'title'],
       properties: {
         apiEndpoint: {
           type: 'string'
         },
-        options: {
-          type: 'object',
-          required: ['title', 'counterColName'],
-          properties: {
-            title: {
-              type: 'string'
-            },
-            description: {
-              type: 'string'
-            },
-            counterColName: {
-              type: 'string'
-            },
-            counterLabel: {
-              type: 'string'
-            },
-            stringDecimal: {
-              type: 'number'
-            },
-            stringPrefix: {
-              type: 'string'
-            },
-            stringSuffix: {
-              type: 'string'
-            }
-          }
+        title: {
+          type: 'string'
+        },
+        description: {
+          type: 'string'
+        },
+        options
+      }
+    }
+    return propertiesSchema as IDataSchema;
+  }
+
+  private getGeneralSchema() {
+    const propertiesSchema = {
+      type: 'object',
+      required: ['apiEndpoint', 'title'],
+      properties: {
+        apiEndpoint: {
+          type: 'string'
+        },
+        title: {
+          type: 'string'
+        },
+        description: {
+          type: 'string'
         }
       }
     }
     return propertiesSchema as IDataSchema;
   }
 
-  private getThemeSchema(readOnly?: boolean) {
+  private getAdvanceSchema() {
+    const propertiesSchema = {
+      type: 'object',
+      properties: {
+        options
+      }
+    };
+    return propertiesSchema as IDataSchema;
+  }
+
+  private getThemeSchema() {
     const themeSchema = {
       type: 'object',
       properties: {
@@ -181,22 +188,28 @@ export default class ScomCounter extends Module {
     return themeSchema as IDataSchema;
   }
 
-  private _getActions(propertiesSchema: IDataSchema, themeSchema: IDataSchema) {
+  private _getActions(propertiesSchema: IDataSchema, themeSchema: IDataSchema, advancedSchema?: IDataSchema) {
     const actions = [
       {
         name: 'Settings',
         icon: 'cog',
         command: (builder: any, userInputData: any) => {
-          let _oldData: ICounterConfig = { apiEndpoint: '', options: undefined };
+          let _oldData: ICounterConfig = { apiEndpoint: '', title: '', options: undefined };
           return {
             execute: async () => {
-              _oldData = {...this._data};
-              if (userInputData?.apiEndpoint !== undefined) this._data.apiEndpoint = userInputData.apiEndpoint;
-              if (userInputData?.options !== undefined) this._data.options = userInputData.options;
+              _oldData = { ...this._data };
+              if (userInputData) {
+                if (advancedSchema) {
+                  this._data = { ...this._data, ...userInputData };
+                } else {
+                  this._data = { ...userInputData };
+                }
+              }
               if (builder?.setData) builder.setData(this._data);
               this.setData(this._data);
             },
             undo: () => {
+              if (advancedSchema) _oldData = { ..._oldData, options: this._data.options };
               if (builder?.setData) builder.setData(_oldData);
               this.setData(_oldData);
             },
@@ -229,6 +242,31 @@ export default class ScomCounter extends Module {
         userInputDataSchema: themeSchema
       }
     ]
+    if (advancedSchema) {
+      const advanced = {
+        name: 'Advanced',
+        icon: 'cog',
+        command: (builder: any, userInputData: any) => {
+          let _oldData: ICounterOptions = { counterColName: '' };
+          return {
+            execute: async () => {
+              _oldData = { ...this._data?.options };
+              if (userInputData?.options !== undefined) this._data.options = userInputData.options;
+              if (builder?.setData) builder.setData(this._data);
+              this.setData(this._data);
+            },
+            undo: () => {
+              this._data.options = { ..._oldData };
+              if (builder?.setData) builder.setData(this._data);
+              this.setData(this._data);
+            },
+            redo: () => { }
+          }
+        },
+        userInputDataSchema: advancedSchema,
+      }
+      actions.push(advanced);
+    }
     return actions
   }
 
@@ -239,12 +277,12 @@ export default class ScomCounter extends Module {
         name: 'Builder Configurator',
         target: 'Builders',
         getActions: () => {
-          return this._getActions(this.getPropertiesSchema(), this.getThemeSchema());
+          return this._getActions(this.getGeneralSchema(), this.getThemeSchema(), this.getAdvanceSchema());
         },
         getData: this.getData.bind(this),
         setData: async (data: ICounterConfig) => {
           const defaultData = dataJson.defaultBuilderData;
-          await this.setData({...defaultData, ...data});
+          await this.setData({ ...defaultData, ...data });
         },
         getTag: this.getTag.bind(this),
         setTag: this.setTag.bind(this)
@@ -253,7 +291,7 @@ export default class ScomCounter extends Module {
         name: 'Emdedder Configurator',
         target: 'Embedders',
         getActions: () => {
-          return this._getActions(this.getPropertiesSchema(true), this.getThemeSchema(true))
+          return this._getActions(this.getPropertiesSchema(), this.getThemeSchema())
         },
         getLinkParams: () => {
           const data = this._data || {};
@@ -327,7 +365,8 @@ export default class ScomCounter extends Module {
 
   private renderCounter(resize?: boolean) {
     if (!this.counterElm && this._data.options) return;
-    const { title, description, counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, coloredNegativeValues, coloredPositiveValues } = this._data.options;
+    const { title, description } = this._data;
+    const { counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, coloredNegativeValues, coloredPositiveValues } = this._data.options;
     this.lbTitle.caption = title;
     this.lbDescription.caption = description;
     this.lbDescription.visible = !!description;

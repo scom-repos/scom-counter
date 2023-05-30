@@ -95,8 +95,8 @@ define("@scom/scom-counter/data.json.ts", ["require", "exports"], function (requ
     exports.default = {
         "defaultBuilderData": {
             "apiEndpoint": "/dune/query/2030584",
+            "title": "Ethereum Beacon Chain Deposits",
             "options": {
-                "title": "Ethereum Beacon Chain Deposits",
                 "counterColName": "deposited",
                 "counterLabel": "ETH deposited"
             }
@@ -107,11 +107,32 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_3.Styles.Theme.ThemeVars;
+    const options = {
+        type: 'object',
+        required: ['counterColName'],
+        properties: {
+            counterColName: {
+                type: 'string'
+            },
+            counterLabel: {
+                type: 'string'
+            },
+            stringDecimal: {
+                type: 'number'
+            },
+            stringPrefix: {
+                type: 'string'
+            },
+            stringSuffix: {
+                type: 'string'
+            }
+        }
+    };
     let ScomCounter = class ScomCounter extends components_3.Module {
         constructor(parent, options) {
             super(parent, options);
             this.apiEndpoint = '';
-            this._data = { apiEndpoint: '', options: undefined };
+            this._data = { apiEndpoint: '', title: '', options: undefined };
             this.tag = {};
             this.defaultEdit = true;
         }
@@ -141,64 +162,53 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             this.height = this.tag.height || 200;
             this.onUpdateBlock();
         }
-        // getConfigSchema() {
-        //   return this.getThemeSchema();
-        // }
-        // onConfigSave(config: any) {
-        //   this.tag = config;
-        //   this.onUpdateBlock();
-        // }
-        // async edit() {
-        //   // this.vStackCounter.visible = false
-        // }
-        // async confirm() {
-        //   this.onUpdateBlock();
-        //   // this.vStackCounter.visible = true
-        // }
-        // async discard() {
-        //   // this.vStackCounter.visible = true
-        // }
-        // async config() { }
-        getPropertiesSchema(readOnly) {
+        getPropertiesSchema() {
             const propertiesSchema = {
                 type: 'object',
-                required: ['apiEndpoint'],
+                required: ['apiEndpoint', 'title'],
                 properties: {
                     apiEndpoint: {
                         type: 'string'
                     },
-                    options: {
-                        type: 'object',
-                        required: ['title', 'counterColName'],
-                        properties: {
-                            title: {
-                                type: 'string'
-                            },
-                            description: {
-                                type: 'string'
-                            },
-                            counterColName: {
-                                type: 'string'
-                            },
-                            counterLabel: {
-                                type: 'string'
-                            },
-                            stringDecimal: {
-                                type: 'number'
-                            },
-                            stringPrefix: {
-                                type: 'string'
-                            },
-                            stringSuffix: {
-                                type: 'string'
-                            }
-                        }
+                    title: {
+                        type: 'string'
+                    },
+                    description: {
+                        type: 'string'
+                    },
+                    options
+                }
+            };
+            return propertiesSchema;
+        }
+        getGeneralSchema() {
+            const propertiesSchema = {
+                type: 'object',
+                required: ['apiEndpoint', 'title'],
+                properties: {
+                    apiEndpoint: {
+                        type: 'string'
+                    },
+                    title: {
+                        type: 'string'
+                    },
+                    description: {
+                        type: 'string'
                     }
                 }
             };
             return propertiesSchema;
         }
-        getThemeSchema(readOnly) {
+        getAdvanceSchema() {
+            const propertiesSchema = {
+                type: 'object',
+                properties: {
+                    options
+                }
+            };
+            return propertiesSchema;
+        }
+        getThemeSchema() {
             const themeSchema = {
                 type: 'object',
                 properties: {
@@ -231,25 +241,24 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             };
             return themeSchema;
         }
-        _getActions(propertiesSchema, themeSchema) {
+        _getActions(propertiesSchema, themeSchema, advancedSchema) {
             const actions = [
                 {
                     name: 'Settings',
                     icon: 'cog',
                     command: (builder, userInputData) => {
-                        let _oldData = { apiEndpoint: '', options: undefined };
+                        let _oldData = { apiEndpoint: '', title: '', options: undefined };
                         return {
                             execute: async () => {
                                 _oldData = Object.assign({}, this._data);
-                                if ((userInputData === null || userInputData === void 0 ? void 0 : userInputData.apiEndpoint) !== undefined)
-                                    this._data.apiEndpoint = userInputData.apiEndpoint;
-                                if ((userInputData === null || userInputData === void 0 ? void 0 : userInputData.options) !== undefined)
-                                    this._data.options = userInputData.options;
+                                if (userInputData)
+                                    this._data = Object.assign(Object.assign({}, this._data), userInputData);
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
                                     builder.setData(this._data);
                                 this.setData(this._data);
                             },
                             undo: () => {
+                                _oldData = Object.assign(Object.assign({}, _oldData), { options: this._data.options });
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
                                     builder.setData(_oldData);
                                 this.setData(_oldData);
@@ -289,6 +298,35 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     userInputDataSchema: themeSchema
                 }
             ];
+            if (advancedSchema) {
+                const advanced = {
+                    name: 'Advanced',
+                    icon: 'cog',
+                    command: (builder, userInputData) => {
+                        let _oldData = { counterColName: '' };
+                        return {
+                            execute: async () => {
+                                var _a;
+                                _oldData = Object.assign({}, (_a = this._data) === null || _a === void 0 ? void 0 : _a.options);
+                                if ((userInputData === null || userInputData === void 0 ? void 0 : userInputData.options) !== undefined)
+                                    this._data.options = userInputData.options;
+                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                    builder.setData(this._data);
+                                this.setData(this._data);
+                            },
+                            undo: () => {
+                                this._data.options = Object.assign({}, _oldData);
+                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                    builder.setData(this._data);
+                                this.setData(this._data);
+                            },
+                            redo: () => { }
+                        };
+                    },
+                    userInputDataSchema: advancedSchema,
+                };
+                actions.push(advanced);
+            }
             return actions;
         }
         getConfigurators() {
@@ -298,7 +336,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     name: 'Builder Configurator',
                     target: 'Builders',
                     getActions: () => {
-                        return this._getActions(this.getPropertiesSchema(), this.getThemeSchema());
+                        return this._getActions(this.getGeneralSchema(), this.getThemeSchema(), this.getAdvanceSchema());
                     },
                     getData: this.getData.bind(this),
                     setData: async (data) => {
@@ -312,7 +350,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     name: 'Emdedder Configurator',
                     target: 'Embedders',
                     getActions: () => {
-                        return this._getActions(this.getPropertiesSchema(true), this.getThemeSchema(true));
+                        return this._getActions(this.getPropertiesSchema(), this.getThemeSchema());
                     },
                     getLinkParams: () => {
                         const data = this._data || {};
@@ -379,7 +417,8 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
         renderCounter(resize) {
             if (!this.counterElm && this._data.options)
                 return;
-            const { title, description, counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, coloredNegativeValues, coloredPositiveValues } = this._data.options;
+            const { title, description } = this._data;
+            const { counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, coloredNegativeValues, coloredPositiveValues } = this._data.options;
             this.lbTitle.caption = title;
             this.lbDescription.caption = description;
             this.lbDescription.visible = !!description;

@@ -1,6 +1,4 @@
 export interface ICounterOptions {
-  title: string,
-  description?: string,
   counterColName: string,
   counterLabel?: string,
   stringDecimal?: number,
@@ -12,5 +10,7 @@ export interface ICounterOptions {
 
 export interface ICounterConfig {
   apiEndpoint: string,
+  title: string,
+  description?: string,
   options: ICounterOptions
 }
