@@ -1,8 +1,6 @@
 /// <amd-module name="@scom/scom-counter/global/interfaces.ts" />
 declare module "@scom/scom-counter/global/interfaces.ts" {
     export interface ICounterOptions {
-        title: string;
-        description?: string;
         counterColName: string;
         counterLabel?: string;
         stringDecimal?: number;
@@ -13,6 +11,8 @@ declare module "@scom/scom-counter/global/interfaces.ts" {
     }
     export interface ICounterConfig {
         apiEndpoint: string;
+        title: string;
+        description?: string;
         options: ICounterOptions;
     }
 }
@@ -60,8 +60,8 @@ declare module "@scom/scom-counter/data.json.ts" {
     const _default_1: {
         defaultBuilderData: {
             apiEndpoint: string;
+            title: string;
             options: {
-                title: string;
                 counterColName: string;
                 counterLabel: string;
             };
@@ -105,6 +105,8 @@ declare module "@scom/scom-counter" {
         private getTag;
         private setTag;
         private getPropertiesSchema;
+        private getGeneralSchema;
+        private getAdvanceSchema;
         private getThemeSchema;
         private _getActions;
         getConfigurators(): ({
