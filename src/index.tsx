@@ -245,7 +245,7 @@ export default class ScomCounter extends Module {
     if (advancedSchema) {
       const advanced = {
         name: 'Advanced',
-        icon: 'cog',
+        icon: 'sliders-h',
         command: (builder: any, userInputData: any) => {
           let _oldData: ICounterOptions = { counterColName: '' };
           return {

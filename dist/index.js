@@ -301,7 +301,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             if (advancedSchema) {
                 const advanced = {
                     name: 'Advanced',
-                    icon: 'cog',
+                    icon: 'sliders-h',
                     command: (builder, userInputData) => {
                         let _oldData = { counterColName: '' };
                         return {
