@@ -251,14 +251,21 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                         return {
                             execute: async () => {
                                 _oldData = Object.assign({}, this._data);
-                                if (userInputData)
-                                    this._data = Object.assign(Object.assign({}, this._data), userInputData);
+                                if (userInputData) {
+                                    if (advancedSchema) {
+                                        this._data = Object.assign(Object.assign({}, this._data), userInputData);
+                                    }
+                                    else {
+                                        this._data = Object.assign({}, userInputData);
+                                    }
+                                }
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
                                     builder.setData(this._data);
                                 this.setData(this._data);
                             },
                             undo: () => {
-                                _oldData = Object.assign(Object.assign({}, _oldData), { options: this._data.options });
+                                if (advancedSchema)
+                                    _oldData = Object.assign(Object.assign({}, _oldData), { options: this._data.options });
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
                                     builder.setData(_oldData);
                                 this.setData(_oldData);
@@ -414,7 +421,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
         formatCounter(num, decimals) {
             return index_1.formatNumberWithSeparators(num, decimals);
         }
-        renderCounter(resize) {
+        async renderCounter(resize) {
             if (!this.counterElm && this._data.options)
                 return;
             const { title, description } = this._data;
@@ -439,6 +446,8 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                 });
                 lbValue.wordBreak = 'break-all';
                 if (isNumber) {
+                    if (!lbValue.isConnected)
+                        await lbValue.ready();
                     const increment = Number(value) / 20;
                     let interval = setInterval(() => {
                         _number += increment;

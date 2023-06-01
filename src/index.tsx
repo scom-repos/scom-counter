@@ -363,7 +363,7 @@ export default class ScomCounter extends Module {
     return formatNumberWithSeparators(num, decimals);
   }
 
-  private renderCounter(resize?: boolean) {
+  private async renderCounter(resize?: boolean) {
     if (!this.counterElm && this._data.options) return;
     const { title, description } = this._data;
     const { counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, coloredNegativeValues, coloredPositiveValues } = this._data.options;
@@ -386,6 +386,7 @@ export default class ScomCounter extends Module {
       });
       lbValue.wordBreak = 'break-all';
       if (isNumber) {
+        if (!lbValue.isConnected) await lbValue.ready();
         const increment = Number(value) / 20;
         let interval = setInterval(() => {
           _number += increment;
