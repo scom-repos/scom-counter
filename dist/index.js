@@ -107,6 +107,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_3.Styles.Theme.ThemeVars;
+    const currentTheme = components_3.Styles.Theme.currentTheme;
     const options = {
         type: 'object',
         required: ['counterColName'],
@@ -231,9 +232,9 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                         type: 'string',
                         format: 'color'
                     },
-                    width: {
-                        type: 'string'
-                    },
+                    // width: {
+                    //   type: 'string'
+                    // },
                     height: {
                         type: 'string'
                     }
@@ -422,10 +423,11 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             return index_1.formatNumberWithSeparators(num, decimals);
         }
         async renderCounter(resize) {
+            var _a;
             if (!this.counterElm && this._data.options)
                 return;
             const { title, description } = this._data;
-            const { counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, coloredNegativeValues, coloredPositiveValues } = this._data.options;
+            const { counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, coloredNegativeValues, coloredPositiveValues } = ((_a = this._data) === null || _a === void 0 ? void 0 : _a.options) || {};
             this.lbTitle.caption = title;
             this.lbDescription.caption = description;
             this.lbDescription.visible = !!description;
@@ -472,12 +474,20 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
         async init() {
             this.isReadyCallbackQueued = true;
             super.init();
+            this.setTag({
+                fontColor: currentTheme.text.primary,
+                backgroundColor: currentTheme.background.main,
+                counterNumberColor: currentTheme.colors.primary.main,
+                counterLabelColor: currentTheme.colors.primary.dark,
+                height: 200,
+                darkShadow: false
+            });
             this.classList.add(index_css_1.counterStyle);
-            const { width, height, darkShadow } = this.tag || {};
-            this.width = width || 700;
-            this.height = height || 200;
+            // const { width, height, darkShadow } = this.tag || {};
+            // this.width = width || 700;
+            // this.height = height || 200;
             this.maxWidth = '100%';
-            this.vStackCounter.style.boxShadow = darkShadow ? '0 -2px 10px rgba(0, 0, 0, 1)' : 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
+            this.vStackCounter.style.boxShadow = 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
             const data = this.getAttribute('data', true);
             if (data) {
                 this.setData(data);
