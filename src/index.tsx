@@ -16,6 +16,7 @@ import { containerStyle, counterStyle } from './index.css';
 import assets from './assets';
 import dataJson from './data.json';
 const Theme = Styles.Theme.ThemeVars;
+const currentTheme = Styles.Theme.currentTheme;
 
 const options = {
   type: 'object',
@@ -177,9 +178,9 @@ export default class ScomCounter extends Module {
           type: 'string',
           format: 'color'
         },
-        width: {
-          type: 'string'
-        },
+        // width: {
+        //   type: 'string'
+        // },
         height: {
           type: 'string'
         }
@@ -366,7 +367,7 @@ export default class ScomCounter extends Module {
   private async renderCounter(resize?: boolean) {
     if (!this.counterElm && this._data.options) return;
     const { title, description } = this._data;
-    const { counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, coloredNegativeValues, coloredPositiveValues } = this._data.options;
+    const { counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, coloredNegativeValues, coloredPositiveValues } = this._data?.options || {};
     this.lbTitle.caption = title;
     this.lbDescription.caption = description;
     this.lbDescription.visible = !!description;
@@ -413,12 +414,20 @@ export default class ScomCounter extends Module {
   async init() {
     this.isReadyCallbackQueued = true;
     super.init();
+    this.setTag({
+      fontColor: currentTheme.text.primary,
+      backgroundColor: currentTheme.background.main,
+      counterNumberColor: currentTheme.colors.primary.main,
+      counterLabelColor: currentTheme.colors.primary.dark,
+      height: 200,
+      darkShadow: false
+    })
     this.classList.add(counterStyle);
-    const { width, height, darkShadow } = this.tag || {};
-    this.width = width || 700;
-    this.height = height || 200;
+    // const { width, height, darkShadow } = this.tag || {};
+    // this.width = width || 700;
+    // this.height = height || 200;
     this.maxWidth = '100%';
-    this.vStackCounter.style.boxShadow = darkShadow ? '0 -2px 10px rgba(0, 0, 0, 1)' : 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
+    this.vStackCounter.style.boxShadow = 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
     const data = this.getAttribute('data', true);
     if (data) {
       this.setData(data);
