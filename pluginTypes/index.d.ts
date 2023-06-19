@@ -74,6 +74,7 @@ declare module "@scom/scom-counter" {
     import { Module, ControlElement, Container, IDataSchema } from '@ijstech/components';
     import { ICounterConfig } from "@scom/scom-counter/global/index.ts";
     interface ScomCounterElement extends ControlElement {
+        lazyLoad?: boolean;
         data: ICounterConfig;
     }
     global {

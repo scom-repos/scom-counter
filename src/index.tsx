@@ -41,6 +41,7 @@ const options = {
 }
 
 interface ScomCounterElement extends ControlElement {
+  lazyLoad?: boolean;
   data: ICounterConfig
 }
 
@@ -422,15 +423,18 @@ export default class ScomCounter extends Module {
       height: 200,
       darkShadow: false
     })
-    this.classList.add(counterStyle);
     // const { width, height, darkShadow } = this.tag || {};
     // this.width = width || 700;
     // this.height = height || 200;
     this.maxWidth = '100%';
     this.vStackCounter.style.boxShadow = 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
-    const data = this.getAttribute('data', true);
-    if (data) {
-      this.setData(data);
+    this.classList.add(counterStyle);
+    const lazyLoad = this.getAttribute('lazyLoad', true, true);
+    if (!lazyLoad) {
+      const data = this.getAttribute('data', true);
+      if (data) {
+        this.setData(data);
+      }
     }
     this.isReadyCallbackQueued = false;
     this.executeReadyCallback();

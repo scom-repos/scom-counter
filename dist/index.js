@@ -1,6 +1,10 @@
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -130,17 +134,17 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
         }
     };
     let ScomCounter = class ScomCounter extends components_3.Module {
+        static async create(options, parent) {
+            let self = new this(parent, options);
+            await self.ready();
+            return self;
+        }
         constructor(parent, options) {
             super(parent, options);
             this.apiEndpoint = '';
             this._data = { apiEndpoint: '', title: '', options: undefined };
             this.tag = {};
             this.defaultEdit = true;
-        }
-        static async create(options, parent) {
-            let self = new this(parent, options);
-            await self.ready();
-            return self;
         }
         getData() {
             return this._data;
@@ -408,7 +412,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             this.apiEndpoint = apiEndpoint;
             if (apiEndpoint) {
                 this.loadingElm.visible = true;
-                const data = await index_1.callAPI(apiEndpoint);
+                const data = await (0, index_1.callAPI)(apiEndpoint);
                 this.loadingElm.visible = false;
                 if (data && this._data.apiEndpoint === apiEndpoint) {
                     this.counterData = data;
@@ -420,7 +424,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             this.onUpdateBlock();
         }
         formatCounter(num, decimals) {
-            return index_1.formatNumberWithSeparators(num, decimals);
+            return (0, index_1.formatNumberWithSeparators)(num, decimals);
         }
         async renderCounter(resize) {
             var _a;
@@ -482,15 +486,18 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                 height: 200,
                 darkShadow: false
             });
-            this.classList.add(index_css_1.counterStyle);
             // const { width, height, darkShadow } = this.tag || {};
             // this.width = width || 700;
             // this.height = height || 200;
             this.maxWidth = '100%';
             this.vStackCounter.style.boxShadow = 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
-            const data = this.getAttribute('data', true);
-            if (data) {
-                this.setData(data);
+            this.classList.add(index_css_1.counterStyle);
+            const lazyLoad = this.getAttribute('lazyLoad', true, true);
+            if (!lazyLoad) {
+                const data = this.getAttribute('data', true);
+                if (data) {
+                    this.setData(data);
+                }
             }
             this.isReadyCallbackQueued = false;
             this.executeReadyCallback();
@@ -513,7 +520,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
     };
     ScomCounter = __decorate([
         components_3.customModule,
-        components_3.customElements('i-scom-counter')
+        (0, components_3.customElements)('i-scom-counter')
     ], ScomCounter);
     exports.default = ScomCounter;
 });
