@@ -492,7 +492,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             this.maxWidth = '100%';
             this.vStackCounter.style.boxShadow = 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
             this.classList.add(index_css_1.counterStyle);
-            const lazyLoad = this.getAttribute('lazyLoad', true, true);
+            const lazyLoad = this.getAttribute('lazyLoad', true, false);
             if (!lazyLoad) {
                 const data = this.getAttribute('data', true);
                 if (data) {

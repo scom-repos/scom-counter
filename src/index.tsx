@@ -429,7 +429,7 @@ export default class ScomCounter extends Module {
     this.maxWidth = '100%';
     this.vStackCounter.style.boxShadow = 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
     this.classList.add(counterStyle);
-    const lazyLoad = this.getAttribute('lazyLoad', true, true);
+    const lazyLoad = this.getAttribute('lazyLoad', true, false);
     if (!lazyLoad) {
       const data = this.getAttribute('data', true);
       if (data) {
