@@ -1,3 +1,5 @@
+import { ModeType } from "@scom/scom-chart-data-source-setup"
+
 export interface ICounterOptions {
   counterColName: string,
   counterLabel?: string,
@@ -9,8 +11,13 @@ export interface ICounterOptions {
 }
 
 export interface ICounterConfig {
-  apiEndpoint: string,
+  apiEndpoint?: string,
   title: string,
   description?: string,
-  options: ICounterOptions
+  options: ICounterOptions,
+  file?: {
+    cid: string,
+    name: string
+  },
+  mode: ModeType
 }

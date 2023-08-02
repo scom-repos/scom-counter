@@ -9,12 +9,15 @@ import {
   Label,
   VStack,
   Styles,
-  Panel
+  Panel,
+  Button
 } from '@ijstech/components';
 import { ICounterConfig, formatNumberWithSeparators, callAPI, ICounterOptions } from './global/index';
 import { containerStyle, counterStyle } from './index.css';
 import assets from './assets';
 import dataJson from './data.json';
+import ScomChartDataSourceSetup, { ModeType, fetchContentByCID } from '@scom/scom-chart-data-source-setup';
+
 const Theme = Styles.Theme.ThemeVars;
 const currentTheme = Styles.Theme.currentTheme;
 
@@ -65,7 +68,7 @@ export default class ScomCounter extends Module {
   private counterData: { [key: string]: string | number }[];
   private apiEndpoint = '';
 
-  private _data: ICounterConfig = { apiEndpoint: '', title: '', options: undefined };
+  private _data: ICounterConfig = { apiEndpoint: '', title: '', options: undefined, mode: ModeType.LIVE };
   tag: any = {};
   defaultEdit: boolean = true;
   readonly onConfirm: () => Promise<void>;
@@ -112,9 +115,9 @@ export default class ScomCounter extends Module {
       type: 'object',
       required: ['apiEndpoint', 'title'],
       properties: {
-        apiEndpoint: {
-          type: 'string'
-        },
+        // apiEndpoint: {
+        //   type: 'string'
+        // },
         title: {
           type: 'string'
         },
@@ -130,11 +133,11 @@ export default class ScomCounter extends Module {
   private getGeneralSchema() {
     const propertiesSchema = {
       type: 'object',
-      required: ['apiEndpoint', 'title'],
+      required: ['title'],
       properties: {
-        apiEndpoint: {
-          type: 'string'
-        },
+        // apiEndpoint: {
+        //   type: 'string'
+        // },
         title: {
           type: 'string'
         },
@@ -193,10 +196,67 @@ export default class ScomCounter extends Module {
   private _getActions(propertiesSchema: IDataSchema, themeSchema: IDataSchema, advancedSchema?: IDataSchema) {
     const actions = [
       {
+        name: 'Data Source',
+        icon: 'database',
+        command: (builder: any, userInputData: any) => {
+          let _oldData: ICounterConfig = { apiEndpoint: '', title: '', options: undefined,  mode: ModeType.LIVE };
+          return {
+            execute: async () => {
+              _oldData = { ...this._data };
+              if (userInputData?.mode) this._data.mode = userInputData?.mode;
+              if (userInputData?.file) this._data.file = userInputData?.file;
+              if (userInputData?.apiEndpoint) this._data.apiEndpoint = userInputData?.apiEndpoint;
+              if (builder?.setData) builder.setData(this._data);
+              this.setData(this._data);
+            },
+            undo: () => {
+              if (builder?.setData) builder.setData(_oldData);
+              this.setData(_oldData);
+            },
+            redo: () => { }
+          }
+        },
+        customUI: {
+          render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
+            const vstack = new VStack(null, {gap: '1rem'});
+            const config = new ScomChartDataSourceSetup(null, {...this._data, chartData: JSON.stringify(this.counterData)});
+            const hstack = new HStack(null, {
+              verticalAlignment: 'center',
+              horizontalAlignment: 'end'
+            });
+            const button = new Button(null, {
+              caption: 'Confirm',
+              width: 'auto',
+              height: 40,
+              font: {color: Theme.colors.primary.contrastText}
+            });
+            hstack.append(button);
+            vstack.append(config);
+            vstack.append(hstack);
+            button.onClick = async () => {
+              const { apiEndpoint, file, mode } = config.data;
+              if (mode === 'Live') {
+                if (!apiEndpoint) return;
+                this._data.apiEndpoint = apiEndpoint;
+                this.updateCounterData();
+              } else {
+                if (!file?.cid) return;
+                this.counterData = config.data.chartData ? JSON.parse(config.data.chartData) : []
+                this.onUpdateBlock();
+              }
+              if (onConfirm) {
+                onConfirm(true, {...this._data, apiEndpoint, file, mode});
+              }
+            }
+            return vstack;
+          }
+        }
+      },
+      {
         name: 'Settings',
         icon: 'cog',
         command: (builder: any, userInputData: any) => {
-          let _oldData: ICounterConfig = { apiEndpoint: '', title: '', options: undefined };
+          let _oldData: ICounterConfig = { apiEndpoint: '', title: '', options: undefined, mode: ModeType.LIVE };
           return {
             execute: async () => {
               _oldData = { ...this._data };
@@ -341,6 +401,28 @@ export default class ScomCounter extends Module {
   }
 
   private async updateCounterData() {
+    this.loadingElm.visible = true;
+    if (this._data?.mode === ModeType.SNAPSHOT)
+      await this.renderSnapshotData();
+    else
+      await this.renderLiveData();
+    this.loadingElm.visible = false;
+  }
+
+  private async renderSnapshotData() {
+    if (this._data.file?.cid) {
+      const data = await fetchContentByCID(this._data.file.cid);
+      if (data) {
+        this.counterData = data;
+        this.onUpdateBlock();
+        return;
+      }
+    }
+    this.counterData = [];
+    this.onUpdateBlock();
+  }
+
+  private async renderLiveData() {
     if (this._data.apiEndpoint === this.apiEndpoint) {
       this.onUpdateBlock();
       return;
@@ -348,14 +430,15 @@ export default class ScomCounter extends Module {
     const apiEndpoint = this._data.apiEndpoint;
     this.apiEndpoint = apiEndpoint;
     if (apiEndpoint) {
-      this.loadingElm.visible = true;
-      const data = await callAPI(apiEndpoint);
-      this.loadingElm.visible = false;
-      if (data && this._data.apiEndpoint === apiEndpoint) {
-        this.counterData = data;
-        this.onUpdateBlock();
-        return;
-      }
+      let data = null
+      try {
+        data = await callAPI(apiEndpoint);
+        if (data && this._data.apiEndpoint === apiEndpoint) {
+          this.counterData = data;
+          this.onUpdateBlock();
+          return;
+        }
+      } catch {}
     }
     this.counterData = [];
     this.onUpdateBlock();

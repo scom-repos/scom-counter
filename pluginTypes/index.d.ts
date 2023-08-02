@@ -1,5 +1,6 @@
 /// <amd-module name="@scom/scom-counter/global/interfaces.ts" />
 declare module "@scom/scom-counter/global/interfaces.ts" {
+    import { ModeType } from "@scom/scom-chart-data-source-setup";
     export interface ICounterOptions {
         counterColName: string;
         counterLabel?: string;
@@ -10,10 +11,15 @@ declare module "@scom/scom-counter/global/interfaces.ts" {
         coloredNegativeValues?: boolean;
     }
     export interface ICounterConfig {
-        apiEndpoint: string;
+        apiEndpoint?: string;
         title: string;
         description?: string;
         options: ICounterOptions;
+        file?: {
+            cid: string;
+            name: string;
+        };
+        mode: ModeType;
     }
 }
 /// <amd-module name="@scom/scom-counter/global/utils.ts" />
@@ -71,7 +77,7 @@ declare module "@scom/scom-counter/data.json.ts" {
 }
 /// <amd-module name="@scom/scom-counter" />
 declare module "@scom/scom-counter" {
-    import { Module, ControlElement, Container, IDataSchema } from '@ijstech/components';
+    import { Module, ControlElement, Container, IDataSchema, VStack } from '@ijstech/components';
     import { ICounterConfig } from "@scom/scom-counter/global/index.ts";
     interface ScomCounterElement extends ControlElement {
         lazyLoad?: boolean;
@@ -113,7 +119,19 @@ declare module "@scom/scom-counter" {
         getConfigurators(): ({
             name: string;
             target: string;
-            getActions: () => {
+            getActions: () => ({
+                name: string;
+                icon: string;
+                command: (builder: any, userInputData: any) => {
+                    execute: () => Promise<void>;
+                    undo: () => void;
+                    redo: () => void;
+                };
+                customUI: {
+                    render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => VStack;
+                };
+                userInputDataSchema?: undefined;
+            } | {
                 name: string;
                 icon: string;
                 command: (builder: any, userInputData: any) => {
@@ -122,7 +140,8 @@ declare module "@scom/scom-counter" {
                     redo: () => void;
                 };
                 userInputDataSchema: IDataSchema;
-            }[];
+                customUI?: undefined;
+            })[];
             getData: any;
             setData: (data: ICounterConfig) => Promise<void>;
             getTag: any;
@@ -132,7 +151,19 @@ declare module "@scom/scom-counter" {
         } | {
             name: string;
             target: string;
-            getActions: () => {
+            getActions: () => ({
+                name: string;
+                icon: string;
+                command: (builder: any, userInputData: any) => {
+                    execute: () => Promise<void>;
+                    undo: () => void;
+                    redo: () => void;
+                };
+                customUI: {
+                    render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => VStack;
+                };
+                userInputDataSchema?: undefined;
+            } | {
                 name: string;
                 icon: string;
                 command: (builder: any, userInputData: any) => {
@@ -141,7 +172,8 @@ declare module "@scom/scom-counter" {
                     redo: () => void;
                 };
                 userInputDataSchema: IDataSchema;
-            }[];
+                customUI?: undefined;
+            })[];
             getLinkParams: () => {
                 data: string;
             };
@@ -155,6 +187,8 @@ declare module "@scom/scom-counter" {
         private updateTheme;
         private onUpdateBlock;
         private updateCounterData;
+        private renderSnapshotData;
+        private renderLiveData;
         private formatCounter;
         private renderCounter;
         private resizeCounter;
