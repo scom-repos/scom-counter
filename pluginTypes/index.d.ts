@@ -98,7 +98,6 @@ declare module "@scom/scom-counter" {
         private lbDescription;
         private counterElm;
         private counterData;
-        private apiEndpoint;
         private _data;
         tag: any;
         defaultEdit: boolean;
