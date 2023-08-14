@@ -75,6 +75,42 @@ declare module "@scom/scom-counter/data.json.ts" {
     };
     export default _default_1;
 }
+/// <amd-module name="@scom/scom-counter/dataOptionsForm.tsx" />
+declare module "@scom/scom-counter/dataOptionsForm.tsx" {
+    import { Module, ControlElement, Container } from '@ijstech/components';
+    interface IData {
+        options: any;
+    }
+    interface ScomCounterDataOptionsFormElement extends ControlElement {
+        jsonSchema?: any;
+        counterColName?: string;
+        counterLabel?: string;
+        stringDecimal?: number;
+        stringPrefix?: string;
+        stringSuffix?: string;
+    }
+    global {
+        namespace JSX {
+            interface IntrinsicElements {
+                ["i-scom-counter-data-options-form"]: ScomCounterDataOptionsFormElement;
+            }
+        }
+    }
+    export default class ScomCounterDataOptionsForm extends Module {
+        private formEl;
+        private _jsonSchema;
+        private _data;
+        constructor(parent?: Container, options?: any);
+        get data(): IData;
+        set data(value: IData);
+        refreshFormData(): Promise<IData>;
+        private renderUI;
+        private onInputChanged;
+        onCustomInputChanged(data: IData): Promise<void>;
+        init(): Promise<void>;
+        render(): any;
+    }
+}
 /// <amd-module name="@scom/scom-counter" />
 declare module "@scom/scom-counter" {
     import { Module, ControlElement, Container, IDataSchema, VStack } from '@ijstech/components';
@@ -126,10 +162,8 @@ declare module "@scom/scom-counter" {
                     undo: () => void;
                     redo: () => void;
                 };
-                customUI: {
-                    render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => VStack;
-                };
-                userInputDataSchema?: undefined;
+                userInputDataSchema: IDataSchema;
+                customUI?: undefined;
             } | {
                 name: string;
                 icon: string;
@@ -138,8 +172,10 @@ declare module "@scom/scom-counter" {
                     undo: () => void;
                     redo: () => void;
                 };
-                userInputDataSchema: IDataSchema;
-                customUI?: undefined;
+                customUI: {
+                    render: (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => Promise<VStack>;
+                };
+                userInputDataSchema?: undefined;
             })[];
             getData: any;
             setData: (data: ICounterConfig) => Promise<void>;
@@ -158,10 +194,8 @@ declare module "@scom/scom-counter" {
                     undo: () => void;
                     redo: () => void;
                 };
-                customUI: {
-                    render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => VStack;
-                };
-                userInputDataSchema?: undefined;
+                userInputDataSchema: IDataSchema;
+                customUI?: undefined;
             } | {
                 name: string;
                 icon: string;
@@ -170,8 +204,10 @@ declare module "@scom/scom-counter" {
                     undo: () => void;
                     redo: () => void;
                 };
-                userInputDataSchema: IDataSchema;
-                customUI?: undefined;
+                customUI: {
+                    render: (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => Promise<VStack>;
+                };
+                userInputDataSchema?: undefined;
             })[];
             getLinkParams: () => {
                 data: string;

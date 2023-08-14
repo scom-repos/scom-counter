@@ -10,36 +10,44 @@ import {
   VStack,
   Styles,
   Panel,
-  Button
+  Button,
+  Form
 } from '@ijstech/components';
 import { ICounterConfig, formatNumberWithSeparators, callAPI, ICounterOptions } from './global/index';
 import { containerStyle, counterStyle } from './index.css';
 import assets from './assets';
 import dataJson from './data.json';
 import ScomChartDataSourceSetup, { ModeType, fetchContentByCID } from '@scom/scom-chart-data-source-setup';
+import ScomCounterDataOptionsForm from './dataOptionsForm';
 
 const Theme = Styles.Theme.ThemeVars;
 const currentTheme = Styles.Theme.currentTheme;
 
 const options = {
   type: 'object',
+  title: 'Visualization Options',
   required: ['counterColName'],
   properties: {
-    counterColName: {
-      type: 'string'
-    },
-    counterLabel: {
-      type: 'string'
-    },
-    stringDecimal: {
-      type: 'number'
-    },
-    stringPrefix: {
-      type: 'string'
-    },
-    stringSuffix: {
-      type: 'string'
-    }
+      counterColName: {
+          title: 'Column',
+          type: 'string'
+      },
+      counterLabel: {
+          title: 'Label',
+          type: 'string'
+      },
+      stringDecimal: {
+          title: 'Decimals',
+          type: 'number'
+      },
+      stringPrefix: {
+          title: 'Prefix',
+          type: 'string'
+      },
+      stringSuffix: {
+          title: 'Suffix',
+          type: 'string'
+      }
   }
 }
 
@@ -195,57 +203,7 @@ export default class ScomCounter extends Module {
   private _getActions(propertiesSchema: IDataSchema, themeSchema: IDataSchema, advancedSchema?: IDataSchema) {
     const actions = [
       {
-        name: 'Data Source',
-        icon: 'database',
-        command: (builder: any, userInputData: any) => {
-          let _oldData: ICounterConfig = { apiEndpoint: '', title: '', options: undefined,  mode: ModeType.LIVE };
-          return {
-            execute: async () => {
-              _oldData = { ...this._data };
-              if (userInputData?.mode) this._data.mode = userInputData?.mode;
-              if (userInputData?.file) this._data.file = userInputData?.file;
-              if (userInputData?.apiEndpoint) this._data.apiEndpoint = userInputData?.apiEndpoint;
-              if (builder?.setData) builder.setData(this._data);
-              this.setData(this._data);
-            },
-            undo: () => {
-              if (builder?.setData) builder.setData(_oldData);
-              this.setData(_oldData);
-            },
-            redo: () => { }
-          }
-        },
-        customUI: {
-          render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
-            const vstack = new VStack(null, {gap: '1rem'});
-            const config = new ScomChartDataSourceSetup(null, {...this._data, chartData: JSON.stringify(this.counterData)});
-            const hstack = new HStack(null, {
-              verticalAlignment: 'center',
-              horizontalAlignment: 'end'
-            });
-            const button = new Button(null, {
-              caption: 'Confirm',
-              width: 'auto',
-              height: 40,
-              font: {color: Theme.colors.primary.contrastText}
-            });
-            hstack.append(button);
-            vstack.append(config);
-            vstack.append(hstack);
-            button.onClick = async () => {
-              const { apiEndpoint, file, mode } = config.data;
-              if (mode === ModeType.LIVE && !apiEndpoint) return;
-              if (mode === ModeType.SNAPSHOT && !file?.cid) return;
-              if (onConfirm) {
-                onConfirm(true, {...this._data, apiEndpoint, file, mode});
-              }
-            }
-            return vstack;
-          }
-        }
-      },
-      {
-        name: 'Settings',
+        name: 'General',
         icon: 'cog',
         command: (builder: any, userInputData: any) => {
           let _oldData: ICounterConfig = { apiEndpoint: '', title: '', options: undefined, mode: ModeType.LIVE };
@@ -273,6 +231,82 @@ export default class ScomCounter extends Module {
         userInputDataSchema: propertiesSchema,
       },
       {
+        name: 'Data',
+        icon: 'database',
+        command: (builder: any, userInputData: any) => {
+          let _oldData: ICounterConfig = { apiEndpoint: '', title: '', options: undefined,  mode: ModeType.LIVE };
+          return {
+            execute: async () => {
+              _oldData = { ...this._data };
+              if (userInputData?.mode) this._data.mode = userInputData?.mode;
+              if (userInputData?.file) this._data.file = userInputData?.file;
+              if (userInputData?.apiEndpoint) this._data.apiEndpoint = userInputData?.apiEndpoint;
+              if (userInputData?.options !== undefined) this._data.options = userInputData.options;
+              if (builder?.setData) builder.setData(this._data);
+              this.setData(this._data);
+            },
+            undo: () => {
+              if (builder?.setData) builder.setData(_oldData);
+              this.setData(_oldData);
+            },
+            redo: () => { }
+          }
+        },
+        customUI: {
+          render: async (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => {
+            const vstack = new VStack(null, {gap: '1rem'});
+            const config = new ScomChartDataSourceSetup(null, {...this._data, chartData: JSON.stringify(this.counterData)});
+            const hstackBtnConfirm = new HStack(null, {
+              verticalAlignment: 'center',
+              horizontalAlignment: 'end'
+            });
+            const button = new Button(null, {
+              caption: 'Confirm',
+              width: 'auto',
+              height: 40,
+              font: {color: Theme.colors.primary.contrastText}
+            });
+            hstackBtnConfirm.append(button);
+            vstack.append(config);
+            const dataOptionsForm = new ScomCounterDataOptionsForm(null, {
+              ...this._data.options,
+              jsonSchema: advancedSchema,
+            });
+            vstack.append(dataOptionsForm);
+            vstack.append(hstackBtnConfirm);
+            if (onChange) {
+              dataOptionsForm.onCustomInputChanged = async (optionsFormData: any) => {
+                const { apiEndpoint, file, mode } = config.data;
+                onChange(true, {
+                  ...this._data, 
+                  ...optionsFormData,
+                  apiEndpoint, 
+                  file, 
+                  mode
+                });
+              }
+            }
+            button.onClick = async () => {
+              const { apiEndpoint, file, mode } = config.data;
+              if (mode === ModeType.LIVE && !apiEndpoint) return;
+              if (mode === ModeType.SNAPSHOT && !file?.cid) return;
+              if (onConfirm) {
+                const optionsFormData = await dataOptionsForm.refreshFormData();
+                onConfirm(true, {
+                  ...this._data, 
+                  ...optionsFormData,
+                  apiEndpoint, 
+                  file, 
+                  mode
+                });
+              }
+            }
+
+            return vstack;
+          }
+        }
+      },
+      {
         name: 'Theme Settings',
         icon: 'palette',
         command: (builder: any, userInputData: any) => {
@@ -296,31 +330,31 @@ export default class ScomCounter extends Module {
         userInputDataSchema: themeSchema
       }
     ]
-    if (advancedSchema) {
-      const advanced = {
-        name: 'Advanced',
-        icon: 'sliders-h',
-        command: (builder: any, userInputData: any) => {
-          let _oldData: ICounterOptions = { counterColName: '' };
-          return {
-            execute: async () => {
-              _oldData = { ...this._data?.options };
-              if (userInputData?.options !== undefined) this._data.options = userInputData.options;
-              if (builder?.setData) builder.setData(this._data);
-              this.setData(this._data);
-            },
-            undo: () => {
-              this._data.options = { ..._oldData };
-              if (builder?.setData) builder.setData(this._data);
-              this.setData(this._data);
-            },
-            redo: () => { }
-          }
-        },
-        userInputDataSchema: advancedSchema,
-      }
-      actions.push(advanced);
-    }
+    // if (advancedSchema) {
+    //   const advanced = {
+    //     name: 'Advanced',
+    //     icon: 'sliders-h',
+    //     command: (builder: any, userInputData: any) => {
+    //       let _oldData: ICounterOptions = { counterColName: '' };
+    //       return {
+    //         execute: async () => {
+    //           _oldData = { ...this._data?.options };
+    //           if (userInputData?.options !== undefined) this._data.options = userInputData.options;
+    //           if (builder?.setData) builder.setData(this._data);
+    //           this.setData(this._data);
+    //         },
+    //         undo: () => {
+    //           this._data.options = { ..._oldData };
+    //           if (builder?.setData) builder.setData(this._data);
+    //           this.setData(this._data);
+    //         },
+    //         redo: () => { }
+    //       }
+    //     },
+    //     userInputDataSchema: advancedSchema,
+    //   }
+    //   actions.push(advanced);
+    // }
     return actions
   }
 

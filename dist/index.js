@@ -107,33 +107,115 @@ define("@scom/scom-counter/data.json.ts", ["require", "exports"], function (requ
         }
     };
 });
-define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@scom/scom-counter/global/index.ts", "@scom/scom-counter/index.css.ts", "@scom/scom-counter/assets.ts", "@scom/scom-counter/data.json.ts", "@scom/scom-chart-data-source-setup"], function (require, exports, components_3, index_1, index_css_1, assets_1, data_json_1, scom_chart_data_source_setup_1) {
+define("@scom/scom-counter/dataOptionsForm.tsx", ["require", "exports", "@ijstech/components"], function (require, exports, components_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const Theme = components_3.Styles.Theme.ThemeVars;
-    const currentTheme = components_3.Styles.Theme.currentTheme;
+    let ScomCounterDataOptionsForm = class ScomCounterDataOptionsForm extends components_3.Module {
+        constructor(parent, options) {
+            super(parent, options);
+        }
+        get data() {
+            return this._data;
+        }
+        set data(value) {
+            this._data = value;
+            this.renderUI();
+        }
+        async refreshFormData() {
+            this._data = await this.formEl.getFormData();
+            return this._data;
+        }
+        renderUI() {
+            this.formEl.clearInnerHTML();
+            this.formEl.jsonSchema = this._jsonSchema;
+            this.formEl.formOptions = {
+                columnWidth: '100%',
+                columnsPerRow: 1,
+                confirmButtonOptions: {
+                    hide: true
+                }
+            };
+            this.formEl.renderForm();
+            this.formEl.clearFormData();
+            this.formEl.setFormData(this._data);
+            const inputs = this.formEl.querySelectorAll('[scope]');
+            for (let input of inputs) {
+                const inputEl = input;
+                inputEl.onChanged = this.onInputChanged;
+            }
+        }
+        async onInputChanged() {
+            const data = await this.formEl.getFormData();
+            await this.onCustomInputChanged(data);
+        }
+        async onCustomInputChanged(data) {
+        }
+        async init() {
+            super.init();
+            this.onInputChanged = this.onInputChanged.bind(this);
+            const jsonSchema = this.getAttribute('jsonSchema', true);
+            this._jsonSchema = jsonSchema;
+            const counterColName = this.getAttribute('counterColName', true, '');
+            const counterLabel = this.getAttribute('counterLabel', true, '');
+            const stringDecimal = this.getAttribute('stringDecimal', true, 0);
+            const stringPrefix = this.getAttribute('stringPrefix', true, '');
+            const stringSuffix = this.getAttribute('stringSuffix', true, '');
+            this.data = {
+                options: {
+                    counterColName,
+                    counterLabel,
+                    stringDecimal,
+                    stringPrefix,
+                    stringSuffix
+                }
+            };
+        }
+        render() {
+            return (this.$render("i-panel", null,
+                this.$render("i-vstack", { gap: '0.5rem' },
+                    this.$render("i-panel", { id: 'pnlForm' },
+                        this.$render("i-form", { id: 'formEl' })))));
+        }
+    };
+    ScomCounterDataOptionsForm = __decorate([
+        components_3.customModule,
+        (0, components_3.customElements)('i-scom-counter-data-options-form')
+    ], ScomCounterDataOptionsForm);
+    exports.default = ScomCounterDataOptionsForm;
+});
+define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@scom/scom-counter/global/index.ts", "@scom/scom-counter/index.css.ts", "@scom/scom-counter/assets.ts", "@scom/scom-counter/data.json.ts", "@scom/scom-chart-data-source-setup", "@scom/scom-counter/dataOptionsForm.tsx"], function (require, exports, components_4, index_1, index_css_1, assets_1, data_json_1, scom_chart_data_source_setup_1, dataOptionsForm_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Theme = components_4.Styles.Theme.ThemeVars;
+    const currentTheme = components_4.Styles.Theme.currentTheme;
     const options = {
         type: 'object',
+        title: 'Visualization Options',
         required: ['counterColName'],
         properties: {
             counterColName: {
+                title: 'Column',
                 type: 'string'
             },
             counterLabel: {
+                title: 'Label',
                 type: 'string'
             },
             stringDecimal: {
+                title: 'Decimals',
                 type: 'number'
             },
             stringPrefix: {
+                title: 'Prefix',
                 type: 'string'
             },
             stringSuffix: {
+                title: 'Suffix',
                 type: 'string'
             }
         }
     };
-    let ScomCounter = class ScomCounter extends components_3.Module {
+    let ScomCounter = class ScomCounter extends components_4.Module {
         static async create(options, parent) {
             let self = new this(parent, options);
             await self.ready();
@@ -248,64 +330,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
         _getActions(propertiesSchema, themeSchema, advancedSchema) {
             const actions = [
                 {
-                    name: 'Data Source',
-                    icon: 'database',
-                    command: (builder, userInputData) => {
-                        let _oldData = { apiEndpoint: '', title: '', options: undefined, mode: scom_chart_data_source_setup_1.ModeType.LIVE };
-                        return {
-                            execute: async () => {
-                                _oldData = Object.assign({}, this._data);
-                                if (userInputData === null || userInputData === void 0 ? void 0 : userInputData.mode)
-                                    this._data.mode = userInputData === null || userInputData === void 0 ? void 0 : userInputData.mode;
-                                if (userInputData === null || userInputData === void 0 ? void 0 : userInputData.file)
-                                    this._data.file = userInputData === null || userInputData === void 0 ? void 0 : userInputData.file;
-                                if (userInputData === null || userInputData === void 0 ? void 0 : userInputData.apiEndpoint)
-                                    this._data.apiEndpoint = userInputData === null || userInputData === void 0 ? void 0 : userInputData.apiEndpoint;
-                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
-                                    builder.setData(this._data);
-                                this.setData(this._data);
-                            },
-                            undo: () => {
-                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
-                                    builder.setData(_oldData);
-                                this.setData(_oldData);
-                            },
-                            redo: () => { }
-                        };
-                    },
-                    customUI: {
-                        render: (data, onConfirm) => {
-                            const vstack = new components_3.VStack(null, { gap: '1rem' });
-                            const config = new scom_chart_data_source_setup_1.default(null, Object.assign(Object.assign({}, this._data), { chartData: JSON.stringify(this.counterData) }));
-                            const hstack = new components_3.HStack(null, {
-                                verticalAlignment: 'center',
-                                horizontalAlignment: 'end'
-                            });
-                            const button = new components_3.Button(null, {
-                                caption: 'Confirm',
-                                width: 'auto',
-                                height: 40,
-                                font: { color: Theme.colors.primary.contrastText }
-                            });
-                            hstack.append(button);
-                            vstack.append(config);
-                            vstack.append(hstack);
-                            button.onClick = async () => {
-                                const { apiEndpoint, file, mode } = config.data;
-                                if (mode === scom_chart_data_source_setup_1.ModeType.LIVE && !apiEndpoint)
-                                    return;
-                                if (mode === scom_chart_data_source_setup_1.ModeType.SNAPSHOT && !(file === null || file === void 0 ? void 0 : file.cid))
-                                    return;
-                                if (onConfirm) {
-                                    onConfirm(true, Object.assign(Object.assign({}, this._data), { apiEndpoint, file, mode }));
-                                }
-                            };
-                            return vstack;
-                        }
-                    }
-                },
-                {
-                    name: 'Settings',
+                    name: 'General',
                     icon: 'cog',
                     command: (builder, userInputData) => {
                         let _oldData = { apiEndpoint: '', title: '', options: undefined, mode: scom_chart_data_source_setup_1.ModeType.LIVE };
@@ -337,6 +362,78 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     userInputDataSchema: propertiesSchema,
                 },
                 {
+                    name: 'Data',
+                    icon: 'database',
+                    command: (builder, userInputData) => {
+                        let _oldData = { apiEndpoint: '', title: '', options: undefined, mode: scom_chart_data_source_setup_1.ModeType.LIVE };
+                        return {
+                            execute: async () => {
+                                _oldData = Object.assign({}, this._data);
+                                if (userInputData === null || userInputData === void 0 ? void 0 : userInputData.mode)
+                                    this._data.mode = userInputData === null || userInputData === void 0 ? void 0 : userInputData.mode;
+                                if (userInputData === null || userInputData === void 0 ? void 0 : userInputData.file)
+                                    this._data.file = userInputData === null || userInputData === void 0 ? void 0 : userInputData.file;
+                                if (userInputData === null || userInputData === void 0 ? void 0 : userInputData.apiEndpoint)
+                                    this._data.apiEndpoint = userInputData === null || userInputData === void 0 ? void 0 : userInputData.apiEndpoint;
+                                if ((userInputData === null || userInputData === void 0 ? void 0 : userInputData.options) !== undefined)
+                                    this._data.options = userInputData.options;
+                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                    builder.setData(this._data);
+                                this.setData(this._data);
+                            },
+                            undo: () => {
+                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                    builder.setData(_oldData);
+                                this.setData(_oldData);
+                            },
+                            redo: () => { }
+                        };
+                    },
+                    customUI: {
+                        render: async (data, onConfirm, onChange) => {
+                            const vstack = new components_4.VStack(null, { gap: '1rem' });
+                            const config = new scom_chart_data_source_setup_1.default(null, Object.assign(Object.assign({}, this._data), { chartData: JSON.stringify(this.counterData) }));
+                            const hstackBtnConfirm = new components_4.HStack(null, {
+                                verticalAlignment: 'center',
+                                horizontalAlignment: 'end'
+                            });
+                            const button = new components_4.Button(null, {
+                                caption: 'Confirm',
+                                width: 'auto',
+                                height: 40,
+                                font: { color: Theme.colors.primary.contrastText }
+                            });
+                            hstackBtnConfirm.append(button);
+                            vstack.append(config);
+                            const dataOptionsForm = new dataOptionsForm_1.default(null, Object.assign(Object.assign({}, this._data.options), { jsonSchema: advancedSchema }));
+                            vstack.append(dataOptionsForm);
+                            vstack.append(hstackBtnConfirm);
+                            if (onChange) {
+                                dataOptionsForm.onCustomInputChanged = async (optionsFormData) => {
+                                    const { apiEndpoint, file, mode } = config.data;
+                                    onChange(true, Object.assign(Object.assign(Object.assign({}, this._data), optionsFormData), { apiEndpoint,
+                                        file,
+                                        mode }));
+                                };
+                            }
+                            button.onClick = async () => {
+                                const { apiEndpoint, file, mode } = config.data;
+                                if (mode === scom_chart_data_source_setup_1.ModeType.LIVE && !apiEndpoint)
+                                    return;
+                                if (mode === scom_chart_data_source_setup_1.ModeType.SNAPSHOT && !(file === null || file === void 0 ? void 0 : file.cid))
+                                    return;
+                                if (onConfirm) {
+                                    const optionsFormData = await dataOptionsForm.refreshFormData();
+                                    onConfirm(true, Object.assign(Object.assign(Object.assign({}, this._data), optionsFormData), { apiEndpoint,
+                                        file,
+                                        mode }));
+                                }
+                            };
+                            return vstack;
+                        }
+                    }
+                },
+                {
                     name: 'Theme Settings',
                     icon: 'palette',
                     command: (builder, userInputData) => {
@@ -366,35 +463,31 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     userInputDataSchema: themeSchema
                 }
             ];
-            if (advancedSchema) {
-                const advanced = {
-                    name: 'Advanced',
-                    icon: 'sliders-h',
-                    command: (builder, userInputData) => {
-                        let _oldData = { counterColName: '' };
-                        return {
-                            execute: async () => {
-                                var _a;
-                                _oldData = Object.assign({}, (_a = this._data) === null || _a === void 0 ? void 0 : _a.options);
-                                if ((userInputData === null || userInputData === void 0 ? void 0 : userInputData.options) !== undefined)
-                                    this._data.options = userInputData.options;
-                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
-                                    builder.setData(this._data);
-                                this.setData(this._data);
-                            },
-                            undo: () => {
-                                this._data.options = Object.assign({}, _oldData);
-                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
-                                    builder.setData(this._data);
-                                this.setData(this._data);
-                            },
-                            redo: () => { }
-                        };
-                    },
-                    userInputDataSchema: advancedSchema,
-                };
-                actions.push(advanced);
-            }
+            // if (advancedSchema) {
+            //   const advanced = {
+            //     name: 'Advanced',
+            //     icon: 'sliders-h',
+            //     command: (builder: any, userInputData: any) => {
+            //       let _oldData: ICounterOptions = { counterColName: '' };
+            //       return {
+            //         execute: async () => {
+            //           _oldData = { ...this._data?.options };
+            //           if (userInputData?.options !== undefined) this._data.options = userInputData.options;
+            //           if (builder?.setData) builder.setData(this._data);
+            //           this.setData(this._data);
+            //         },
+            //         undo: () => {
+            //           this._data.options = { ..._oldData };
+            //           if (builder?.setData) builder.setData(this._data);
+            //           this.setData(this._data);
+            //         },
+            //         redo: () => { }
+            //       }
+            //     },
+            //     userInputDataSchema: advancedSchema,
+            //   }
+            //   actions.push(advanced);
+            // }
             return actions;
         }
         getConfigurators() {
@@ -520,7 +613,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                 const value = this.counterData[0][counterColName];
                 const isNumber = typeof value === 'number';
                 let _number = isNumber ? (Number(value) / 100) : 0;
-                const lbValue = new components_3.Label(this.counterElm, {
+                const lbValue = new components_4.Label(this.counterElm, {
                     caption: `${stringPrefix || ''}${isNumber ? 0 : value}${stringSuffix || ''}`,
                     font: {
                         size: '32px',
@@ -543,7 +636,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                 }
             }
             if (counterLabel) {
-                new components_3.Label(this.counterElm, {
+                new components_4.Label(this.counterElm, {
                     caption: counterLabel,
                     font: { size: '18px', color: Theme.colors.primary.dark }
                 });
@@ -596,8 +689,8 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
         }
     };
     ScomCounter = __decorate([
-        components_3.customModule,
-        (0, components_3.customElements)('i-scom-counter')
+        components_4.customModule,
+        (0, components_4.customElements)('i-scom-counter')
     ], ScomCounter);
     exports.default = ScomCounter;
 });
