@@ -111,6 +111,133 @@ declare module "@scom/scom-counter/dataOptionsForm.tsx" {
         render(): any;
     }
 }
+/// <amd-module name="@scom/scom-counter/formSchema.ts" />
+declare module "@scom/scom-counter/formSchema.ts" {
+    export function getBuilderSchema(): {
+        general: {
+            dataSchema: {
+                type: string;
+                required: string[];
+                properties: {
+                    title: {
+                        type: string;
+                    };
+                    description: {
+                        type: string;
+                    };
+                };
+            };
+        };
+        advanced: {
+            dataSchema: {
+                type: string;
+                properties: {
+                    options: {
+                        type: string;
+                        title: string;
+                        required: string[];
+                        properties: {
+                            counterColName: {
+                                title: string;
+                                type: string;
+                            };
+                            counterLabel: {
+                                title: string;
+                                type: string;
+                            };
+                            stringDecimal: {
+                                title: string;
+                                type: string;
+                            };
+                            stringPrefix: {
+                                title: string;
+                                type: string;
+                            };
+                            stringSuffix: {
+                                title: string;
+                                type: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        theme: {
+            dataSchema: {
+                type: string;
+                properties: {
+                    darkShadow: {
+                        type: string;
+                    };
+                    fontColor: {
+                        type: string;
+                        format: string;
+                    };
+                    backgroundColor: {
+                        type: string;
+                        format: string;
+                    };
+                    counterNumberColor: {
+                        type: string;
+                        format: string;
+                    };
+                    counterLabelColor: {
+                        type: string;
+                        format: string;
+                    };
+                    height: {
+                        type: string;
+                    };
+                };
+            };
+        };
+    };
+    export function getEmbedderSchema(): {
+        general: {
+            dataSchema: {
+                type: string;
+                required: string[];
+                properties: {
+                    title: {
+                        type: string;
+                    };
+                    description: {
+                        type: string;
+                    };
+                };
+            };
+        };
+        theme: {
+            dataSchema: {
+                type: string;
+                properties: {
+                    darkShadow: {
+                        type: string;
+                    };
+                    fontColor: {
+                        type: string;
+                        format: string;
+                    };
+                    backgroundColor: {
+                        type: string;
+                        format: string;
+                    };
+                    counterNumberColor: {
+                        type: string;
+                        format: string;
+                    };
+                    counterLabelColor: {
+                        type: string;
+                        format: string;
+                    };
+                    height: {
+                        type: string;
+                    };
+                };
+            };
+        };
+    };
+}
 /// <amd-module name="@scom/scom-counter" />
 declare module "@scom/scom-counter" {
     import { Module, ControlElement, Container, IDataSchema, VStack } from '@ijstech/components';
@@ -146,10 +273,6 @@ declare module "@scom/scom-counter" {
         private setData;
         private getTag;
         private setTag;
-        private getPropertiesSchema;
-        private getGeneralSchema;
-        private getAdvanceSchema;
-        private getThemeSchema;
         private _getActions;
         getConfigurators(): ({
             name: string;

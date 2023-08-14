@@ -19,37 +19,10 @@ import assets from './assets';
 import dataJson from './data.json';
 import ScomChartDataSourceSetup, { ModeType, fetchContentByCID } from '@scom/scom-chart-data-source-setup';
 import ScomCounterDataOptionsForm from './dataOptionsForm';
+import { getBuilderSchema, getEmbedderSchema } from './formSchema';
 
 const Theme = Styles.Theme.ThemeVars;
 const currentTheme = Styles.Theme.currentTheme;
-
-const options = {
-  type: 'object',
-  title: 'Visualization Options',
-  required: ['counterColName'],
-  properties: {
-      counterColName: {
-          title: 'Column',
-          type: 'string'
-      },
-      counterLabel: {
-          title: 'Label',
-          type: 'string'
-      },
-      stringDecimal: {
-          title: 'Decimals',
-          type: 'number'
-      },
-      stringPrefix: {
-          title: 'Prefix',
-          type: 'string'
-      },
-      stringSuffix: {
-          title: 'Suffix',
-          type: 'string'
-      }
-  }
-}
 
 interface ScomCounterElement extends ControlElement {
   lazyLoad?: boolean;
@@ -117,89 +90,6 @@ export default class ScomCounter extends Module {
     this.onUpdateBlock();
   }
 
-  private getPropertiesSchema() {
-    const propertiesSchema = {
-      type: 'object',
-      required: ['apiEndpoint', 'title'],
-      properties: {
-        // apiEndpoint: {
-        //   type: 'string'
-        // },
-        title: {
-          type: 'string'
-        },
-        description: {
-          type: 'string'
-        },
-        options
-      }
-    }
-    return propertiesSchema as IDataSchema;
-  }
-
-  private getGeneralSchema() {
-    const propertiesSchema = {
-      type: 'object',
-      required: ['title'],
-      properties: {
-        // apiEndpoint: {
-        //   type: 'string'
-        // },
-        title: {
-          type: 'string'
-        },
-        description: {
-          type: 'string'
-        }
-      }
-    }
-    return propertiesSchema as IDataSchema;
-  }
-
-  private getAdvanceSchema() {
-    const propertiesSchema = {
-      type: 'object',
-      properties: {
-        options
-      }
-    };
-    return propertiesSchema as IDataSchema;
-  }
-
-  private getThemeSchema() {
-    const themeSchema = {
-      type: 'object',
-      properties: {
-        darkShadow: {
-          type: 'boolean'
-        },
-        fontColor: {
-          type: 'string',
-          format: 'color'
-        },
-        backgroundColor: {
-          type: 'string',
-          format: 'color'
-        },
-        counterNumberColor: {
-          type: 'string',
-          format: 'color'
-        },
-        counterLabelColor: {
-          type: 'string',
-          format: 'color'
-        },
-        // width: {
-        //   type: 'string'
-        // },
-        height: {
-          type: 'string'
-        }
-      }
-    }
-    return themeSchema as IDataSchema;
-  }
-
   private _getActions(propertiesSchema: IDataSchema, themeSchema: IDataSchema, advancedSchema?: IDataSchema) {
     const actions = [
       {
@@ -255,7 +145,16 @@ export default class ScomCounter extends Module {
         customUI: {
           render: async (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => {
             const vstack = new VStack(null, {gap: '1rem'});
-            const config = new ScomChartDataSourceSetup(null, {...this._data, chartData: JSON.stringify(this.counterData)});
+            const dataSourceSetup = new ScomChartDataSourceSetup(null, {
+              ...this._data, 
+              chartData: JSON.stringify(this.counterData),
+              onCustomDataChanged: async (data: any) => {
+                onChange(true, {
+                  ...this._data, 
+                  ...data
+                });
+              }
+            });
             const hstackBtnConfirm = new HStack(null, {
               verticalAlignment: 'center',
               horizontalAlignment: 'end'
@@ -267,7 +166,7 @@ export default class ScomCounter extends Module {
               font: {color: Theme.colors.primary.contrastText}
             });
             hstackBtnConfirm.append(button);
-            vstack.append(config);
+            vstack.append(dataSourceSetup);
             const dataOptionsForm = new ScomCounterDataOptionsForm(null, {
               ...this._data.options,
               jsonSchema: advancedSchema,
@@ -276,7 +175,7 @@ export default class ScomCounter extends Module {
             vstack.append(hstackBtnConfirm);
             if (onChange) {
               dataOptionsForm.onCustomInputChanged = async (optionsFormData: any) => {
-                const { apiEndpoint, file, mode } = config.data;
+                const { apiEndpoint, file, mode } = dataSourceSetup.data;
                 onChange(true, {
                   ...this._data, 
                   ...optionsFormData,
@@ -287,7 +186,7 @@ export default class ScomCounter extends Module {
               }
             }
             button.onClick = async () => {
-              const { apiEndpoint, file, mode } = config.data;
+              const { apiEndpoint, file, mode } = dataSourceSetup.data;
               if (mode === ModeType.LIVE && !apiEndpoint) return;
               if (mode === ModeType.SNAPSHOT && !file?.cid) return;
               if (onConfirm) {
@@ -365,7 +264,11 @@ export default class ScomCounter extends Module {
         name: 'Builder Configurator',
         target: 'Builders',
         getActions: () => {
-          return this._getActions(this.getGeneralSchema(), this.getThemeSchema(), this.getAdvanceSchema());
+          const builderSchema = getBuilderSchema();
+          const generalSchema = builderSchema.general.dataSchema as IDataSchema;
+          const themeSchema = builderSchema.theme.dataSchema as IDataSchema;
+          const advancedSchema = builderSchema.advanced.dataSchema as IDataSchema;
+          return this._getActions(generalSchema, themeSchema, advancedSchema);
         },
         getData: this.getData.bind(this),
         setData: async (data: ICounterConfig) => {
@@ -379,7 +282,10 @@ export default class ScomCounter extends Module {
         name: 'Emdedder Configurator',
         target: 'Embedders',
         getActions: () => {
-          return this._getActions(this.getPropertiesSchema(), this.getThemeSchema())
+          const embedderSchema = getEmbedderSchema();
+          const generalSchema = embedderSchema.general.dataSchema as IDataSchema;
+          const themeSchema = embedderSchema.theme.dataSchema as IDataSchema;
+          return this._getActions(generalSchema, themeSchema)
         },
         getLinkParams: () => {
           const data = this._data || {};

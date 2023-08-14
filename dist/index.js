@@ -183,12 +183,12 @@ define("@scom/scom-counter/dataOptionsForm.tsx", ["require", "exports", "@ijstec
     ], ScomCounterDataOptionsForm);
     exports.default = ScomCounterDataOptionsForm;
 });
-define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@scom/scom-counter/global/index.ts", "@scom/scom-counter/index.css.ts", "@scom/scom-counter/assets.ts", "@scom/scom-counter/data.json.ts", "@scom/scom-chart-data-source-setup", "@scom/scom-counter/dataOptionsForm.tsx"], function (require, exports, components_4, index_1, index_css_1, assets_1, data_json_1, scom_chart_data_source_setup_1, dataOptionsForm_1) {
+define("@scom/scom-counter/formSchema.ts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const Theme = components_4.Styles.Theme.ThemeVars;
-    const currentTheme = components_4.Styles.Theme.currentTheme;
-    const options = {
+    exports.getEmbedderSchema = exports.getBuilderSchema = void 0;
+    ///<amd-module name='@scom/scom-counter/formSchema.ts'/> 
+    const visualizationOptions = {
         type: 'object',
         title: 'Visualization Options',
         required: ['counterColName'],
@@ -215,6 +215,119 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             }
         }
     };
+    function getBuilderSchema() {
+        return {
+            general: {
+                dataSchema: {
+                    type: 'object',
+                    required: ['title'],
+                    properties: {
+                        title: {
+                            type: 'string'
+                        },
+                        description: {
+                            type: 'string'
+                        }
+                    }
+                }
+            },
+            advanced: {
+                dataSchema: {
+                    type: 'object',
+                    properties: {
+                        options: visualizationOptions
+                    }
+                }
+            },
+            theme: {
+                dataSchema: {
+                    type: 'object',
+                    properties: {
+                        darkShadow: {
+                            type: 'boolean'
+                        },
+                        fontColor: {
+                            type: 'string',
+                            format: 'color'
+                        },
+                        backgroundColor: {
+                            type: 'string',
+                            format: 'color'
+                        },
+                        counterNumberColor: {
+                            type: 'string',
+                            format: 'color'
+                        },
+                        counterLabelColor: {
+                            type: 'string',
+                            format: 'color'
+                        },
+                        // width: {
+                        //   type: 'string'
+                        // },
+                        height: {
+                            type: 'string'
+                        }
+                    }
+                }
+            }
+        };
+    }
+    exports.getBuilderSchema = getBuilderSchema;
+    function getEmbedderSchema() {
+        return {
+            general: {
+                dataSchema: {
+                    type: 'object',
+                    required: ['title'],
+                    properties: {
+                        title: {
+                            type: 'string'
+                        },
+                        description: {
+                            type: 'string'
+                        }
+                    }
+                }
+            },
+            theme: {
+                dataSchema: {
+                    type: 'object',
+                    properties: {
+                        darkShadow: {
+                            type: 'boolean'
+                        },
+                        fontColor: {
+                            type: 'string',
+                            format: 'color'
+                        },
+                        backgroundColor: {
+                            type: 'string',
+                            format: 'color'
+                        },
+                        counterNumberColor: {
+                            type: 'string',
+                            format: 'color'
+                        },
+                        counterLabelColor: {
+                            type: 'string',
+                            format: 'color'
+                        },
+                        height: {
+                            type: 'string'
+                        }
+                    }
+                }
+            }
+        };
+    }
+    exports.getEmbedderSchema = getEmbedderSchema;
+});
+define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@scom/scom-counter/global/index.ts", "@scom/scom-counter/index.css.ts", "@scom/scom-counter/assets.ts", "@scom/scom-counter/data.json.ts", "@scom/scom-chart-data-source-setup", "@scom/scom-counter/dataOptionsForm.tsx", "@scom/scom-counter/formSchema.ts"], function (require, exports, components_4, index_1, index_css_1, assets_1, data_json_1, scom_chart_data_source_setup_1, dataOptionsForm_1, formSchema_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Theme = components_4.Styles.Theme.ThemeVars;
+    const currentTheme = components_4.Styles.Theme.currentTheme;
     let ScomCounter = class ScomCounter extends components_4.Module {
         static async create(options, parent) {
             let self = new this(parent, options);
@@ -247,85 +360,6 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             this.width = this.tag.width || 700;
             this.height = this.tag.height || 200;
             this.onUpdateBlock();
-        }
-        getPropertiesSchema() {
-            const propertiesSchema = {
-                type: 'object',
-                required: ['apiEndpoint', 'title'],
-                properties: {
-                    // apiEndpoint: {
-                    //   type: 'string'
-                    // },
-                    title: {
-                        type: 'string'
-                    },
-                    description: {
-                        type: 'string'
-                    },
-                    options
-                }
-            };
-            return propertiesSchema;
-        }
-        getGeneralSchema() {
-            const propertiesSchema = {
-                type: 'object',
-                required: ['title'],
-                properties: {
-                    // apiEndpoint: {
-                    //   type: 'string'
-                    // },
-                    title: {
-                        type: 'string'
-                    },
-                    description: {
-                        type: 'string'
-                    }
-                }
-            };
-            return propertiesSchema;
-        }
-        getAdvanceSchema() {
-            const propertiesSchema = {
-                type: 'object',
-                properties: {
-                    options
-                }
-            };
-            return propertiesSchema;
-        }
-        getThemeSchema() {
-            const themeSchema = {
-                type: 'object',
-                properties: {
-                    darkShadow: {
-                        type: 'boolean'
-                    },
-                    fontColor: {
-                        type: 'string',
-                        format: 'color'
-                    },
-                    backgroundColor: {
-                        type: 'string',
-                        format: 'color'
-                    },
-                    counterNumberColor: {
-                        type: 'string',
-                        format: 'color'
-                    },
-                    counterLabelColor: {
-                        type: 'string',
-                        format: 'color'
-                    },
-                    // width: {
-                    //   type: 'string'
-                    // },
-                    height: {
-                        type: 'string'
-                    }
-                }
-            };
-            return themeSchema;
         }
         _getActions(propertiesSchema, themeSchema, advancedSchema) {
             const actions = [
@@ -392,7 +426,9 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     customUI: {
                         render: async (data, onConfirm, onChange) => {
                             const vstack = new components_4.VStack(null, { gap: '1rem' });
-                            const config = new scom_chart_data_source_setup_1.default(null, Object.assign(Object.assign({}, this._data), { chartData: JSON.stringify(this.counterData) }));
+                            const dataSourceSetup = new scom_chart_data_source_setup_1.default(null, Object.assign(Object.assign({}, this._data), { chartData: JSON.stringify(this.counterData), onCustomDataChanged: async (data) => {
+                                    onChange(true, Object.assign(Object.assign({}, this._data), data));
+                                } }));
                             const hstackBtnConfirm = new components_4.HStack(null, {
                                 verticalAlignment: 'center',
                                 horizontalAlignment: 'end'
@@ -404,20 +440,20 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                                 font: { color: Theme.colors.primary.contrastText }
                             });
                             hstackBtnConfirm.append(button);
-                            vstack.append(config);
+                            vstack.append(dataSourceSetup);
                             const dataOptionsForm = new dataOptionsForm_1.default(null, Object.assign(Object.assign({}, this._data.options), { jsonSchema: advancedSchema }));
                             vstack.append(dataOptionsForm);
                             vstack.append(hstackBtnConfirm);
                             if (onChange) {
                                 dataOptionsForm.onCustomInputChanged = async (optionsFormData) => {
-                                    const { apiEndpoint, file, mode } = config.data;
+                                    const { apiEndpoint, file, mode } = dataSourceSetup.data;
                                     onChange(true, Object.assign(Object.assign(Object.assign({}, this._data), optionsFormData), { apiEndpoint,
                                         file,
                                         mode }));
                                 };
                             }
                             button.onClick = async () => {
-                                const { apiEndpoint, file, mode } = config.data;
+                                const { apiEndpoint, file, mode } = dataSourceSetup.data;
                                 if (mode === scom_chart_data_source_setup_1.ModeType.LIVE && !apiEndpoint)
                                     return;
                                 if (mode === scom_chart_data_source_setup_1.ModeType.SNAPSHOT && !(file === null || file === void 0 ? void 0 : file.cid))
@@ -497,7 +533,11 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     name: 'Builder Configurator',
                     target: 'Builders',
                     getActions: () => {
-                        return this._getActions(this.getGeneralSchema(), this.getThemeSchema(), this.getAdvanceSchema());
+                        const builderSchema = (0, formSchema_1.getBuilderSchema)();
+                        const generalSchema = builderSchema.general.dataSchema;
+                        const themeSchema = builderSchema.theme.dataSchema;
+                        const advancedSchema = builderSchema.advanced.dataSchema;
+                        return this._getActions(generalSchema, themeSchema, advancedSchema);
                     },
                     getData: this.getData.bind(this),
                     setData: async (data) => {
@@ -511,7 +551,10 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     name: 'Emdedder Configurator',
                     target: 'Embedders',
                     getActions: () => {
-                        return this._getActions(this.getPropertiesSchema(), this.getThemeSchema());
+                        const embedderSchema = (0, formSchema_1.getEmbedderSchema)();
+                        const generalSchema = embedderSchema.general.dataSchema;
+                        const themeSchema = embedderSchema.theme.dataSchema;
+                        return this._getActions(generalSchema, themeSchema);
                     },
                     getLinkParams: () => {
                         const data = this._data || {};
