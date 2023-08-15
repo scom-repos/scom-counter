@@ -24,7 +24,7 @@ const visualizationOptions = {
             type: 'string'
         }
     }
-  }
+}
 
 export function getBuilderSchema() {
     return {
@@ -33,12 +33,12 @@ export function getBuilderSchema() {
                 type: 'object',
                 required: ['title'],
                 properties: {
-                  title: {
-                    type: 'string'
-                  },
-                  description: {
-                    type: 'string'
-                  }
+                    title: {
+                        type: 'string'
+                    },
+                    description: {
+                        type: 'string'
+                    }
                 }
             }
         },
@@ -46,7 +46,7 @@ export function getBuilderSchema() {
             dataSchema: {
                 type: 'object',
                 properties: {
-                  options: visualizationOptions
+                    options: visualizationOptions
                 }
             }
         },
@@ -54,33 +54,33 @@ export function getBuilderSchema() {
             dataSchema: {
                 type: 'object',
                 properties: {
-                  darkShadow: {
-                    type: 'boolean'
-                  },
-                  fontColor: {
-                    type: 'string',
-                    format: 'color'
-                  },
-                  backgroundColor: {
-                    type: 'string',
-                    format: 'color'
-                  },
-                  counterNumberColor: {
-                    type: 'string',
-                    format: 'color'
-                  },
-                  counterLabelColor: {
-                    type: 'string',
-                    format: 'color'
-                  },
-                  // width: {
-                  //   type: 'string'
-                  // },
-                  height: {
-                    type: 'string'
-                  }
+                    darkShadow: {
+                        type: 'boolean'
+                    },
+                    fontColor: {
+                        type: 'string',
+                        format: 'color'
+                    },
+                    backgroundColor: {
+                        type: 'string',
+                        format: 'color'
+                    },
+                    counterNumberColor: {
+                        type: 'string',
+                        format: 'color'
+                    },
+                    counterLabelColor: {
+                        type: 'string',
+                        format: 'color'
+                    },
+                    // width: {
+                    //   type: 'string'
+                    // },
+                    height: {
+                        type: 'string'
+                    }
                 }
-              }
+            }
         }
     }
 }
@@ -92,12 +92,12 @@ export function getEmbedderSchema() {
                 type: 'object',
                 required: ['title'],
                 properties: {
-                  title: {
-                    type: 'string'
-                  },
-                  description: {
-                    type: 'string'
-                  }
+                    title: {
+                        type: 'string'
+                    },
+                    description: {
+                        type: 'string'
+                    }
                 }
             }
         },
@@ -105,30 +105,30 @@ export function getEmbedderSchema() {
             dataSchema: {
                 type: 'object',
                 properties: {
-                  darkShadow: {
-                    type: 'boolean'
-                  },
-                  fontColor: {
-                    type: 'string',
-                    format: 'color'
-                  },
-                  backgroundColor: {
-                    type: 'string',
-                    format: 'color'
-                  },
-                  counterNumberColor: {
-                    type: 'string',
-                    format: 'color'
-                  },
-                  counterLabelColor: {
-                    type: 'string',
-                    format: 'color'
-                  },
-                  height: {
-                    type: 'string'
-                  }
+                    darkShadow: {
+                        type: 'boolean'
+                    },
+                    fontColor: {
+                        type: 'string',
+                        format: 'color'
+                    },
+                    backgroundColor: {
+                        type: 'string',
+                        format: 'color'
+                    },
+                    counterNumberColor: {
+                        type: 'string',
+                        format: 'color'
+                    },
+                    counterLabelColor: {
+                        type: 'string',
+                        format: 'color'
+                    },
+                    height: {
+                        type: 'string'
+                    }
                 }
-              }
+            }
         }
     }
 }

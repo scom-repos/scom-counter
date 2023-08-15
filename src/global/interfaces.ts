@@ -1,4 +1,4 @@
-import { ModeType } from "@scom/scom-chart-data-source-setup"
+import { DataSource, ModeType } from "@scom/scom-chart-data-source-setup"
 
 export interface ICounterOptions {
   counterColName: string,
@@ -11,13 +11,14 @@ export interface ICounterOptions {
 }
 
 export interface ICounterConfig {
-  apiEndpoint?: string,
-  title: string,
-  description?: string,
-  options: ICounterOptions,
+  dataSource?: string;
+  queryId?: string;
+  title: string;
+  description?: string;
+  options: ICounterOptions;
   file?: {
-    cid: string,
-    name: string
+    cid: string;
+    name: string;
   },
-  mode: ModeType
+  mode: ModeType;
 }

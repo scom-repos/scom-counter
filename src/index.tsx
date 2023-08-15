@@ -17,7 +17,7 @@ import { ICounterConfig, formatNumberWithSeparators, callAPI, ICounterOptions } 
 import { containerStyle, counterStyle } from './index.css';
 import assets from './assets';
 import dataJson from './data.json';
-import ScomChartDataSourceSetup, { ModeType, fetchContentByCID } from '@scom/scom-chart-data-source-setup';
+import ScomChartDataSourceSetup, { ModeType, fetchContentByCID, DataSource } from '@scom/scom-chart-data-source-setup';
 import ScomCounterDataOptionsForm from './dataOptionsForm';
 import { getBuilderSchema, getEmbedderSchema } from './formSchema';
 
@@ -48,7 +48,13 @@ export default class ScomCounter extends Module {
   private counterElm: VStack;
   private counterData: { [key: string]: string | number }[];
 
-  private _data: ICounterConfig = { apiEndpoint: '', title: '', options: undefined, mode: ModeType.LIVE };
+  private _data: ICounterConfig = { 
+    dataSource: DataSource.Dune, 
+    queryId: '', 
+    title: '', 
+    options: undefined, 
+    mode: ModeType.LIVE 
+  };
   tag: any = {};
   defaultEdit: boolean = true;
   readonly onConfirm: () => Promise<void>;
@@ -96,7 +102,13 @@ export default class ScomCounter extends Module {
         name: 'General',
         icon: 'cog',
         command: (builder: any, userInputData: any) => {
-          let _oldData: ICounterConfig = { apiEndpoint: '', title: '', options: undefined, mode: ModeType.LIVE };
+          let _oldData: ICounterConfig = {     
+            dataSource: DataSource.Dune, 
+            queryId: '',  
+            title: '', 
+            options: undefined, 
+            mode: ModeType.LIVE 
+          };
           return {
             execute: async () => {
               _oldData = { ...this._data };
@@ -124,13 +136,20 @@ export default class ScomCounter extends Module {
         name: 'Data',
         icon: 'database',
         command: (builder: any, userInputData: any) => {
-          let _oldData: ICounterConfig = { apiEndpoint: '', title: '', options: undefined,  mode: ModeType.LIVE };
+          let _oldData: ICounterConfig = { 
+            dataSource: DataSource.Dune, 
+            queryId: '',  
+            title: '', 
+            options: undefined,  
+            mode: ModeType.LIVE 
+          };
           return {
             execute: async () => {
               _oldData = { ...this._data };
               if (userInputData?.mode) this._data.mode = userInputData?.mode;
               if (userInputData?.file) this._data.file = userInputData?.file;
-              if (userInputData?.apiEndpoint) this._data.apiEndpoint = userInputData?.apiEndpoint;
+              if (userInputData?.dataSource) this._data.dataSource = userInputData?.dataSource;
+              if (userInputData?.queryId) this._data.queryId = userInputData?.queryId;
               if (userInputData?.options !== undefined) this._data.options = userInputData.options;
               if (builder?.setData) builder.setData(this._data);
               this.setData(this._data);
@@ -175,26 +194,28 @@ export default class ScomCounter extends Module {
             vstack.append(hstackBtnConfirm);
             if (onChange) {
               dataOptionsForm.onCustomInputChanged = async (optionsFormData: any) => {
-                const { apiEndpoint, file, mode } = dataSourceSetup.data;
+                const { dataSource, queryId, file, mode } = dataSourceSetup.data;
                 onChange(true, {
                   ...this._data, 
                   ...optionsFormData,
-                  apiEndpoint, 
+                  dataSource, 
+                  queryId,
                   file, 
                   mode
                 });
               }
             }
             button.onClick = async () => {
-              const { apiEndpoint, file, mode } = dataSourceSetup.data;
-              if (mode === ModeType.LIVE && !apiEndpoint) return;
+              const { dataSource, queryId, file, mode } = dataSourceSetup.data;
+              if (mode === ModeType.LIVE && !dataSource) return;
               if (mode === ModeType.SNAPSHOT && !file?.cid) return;
               if (onConfirm) {
                 const optionsFormData = await dataOptionsForm.refreshFormData();
                 onConfirm(true, {
                   ...this._data, 
                   ...optionsFormData,
-                  apiEndpoint, 
+                  dataSource, 
+                  queryId,
                   file, 
                   mode
                 });
@@ -357,10 +378,11 @@ export default class ScomCounter extends Module {
   }
 
   private async renderLiveData() {
-    const apiEndpoint = this._data.apiEndpoint;
-    if (apiEndpoint) {
+    const dataSource = this._data.dataSource;
+    const queryId = this._data.queryId;
+    if (dataSource && queryId) {
       try {
-        const data = await callAPI(apiEndpoint);
+        const data = await callAPI(dataSource, queryId);
         if (data) {
           this.counterData = data;
           this.onUpdateBlock();

@@ -11,7 +11,8 @@ declare module "@scom/scom-counter/global/interfaces.ts" {
         coloredNegativeValues?: boolean;
     }
     export interface ICounterConfig {
-        apiEndpoint?: string;
+        dataSource?: string;
+        queryId?: string;
         title: string;
         description?: string;
         options: ICounterOptions;
@@ -25,7 +26,7 @@ declare module "@scom/scom-counter/global/interfaces.ts" {
 /// <amd-module name="@scom/scom-counter/global/utils.ts" />
 declare module "@scom/scom-counter/global/utils.ts" {
     export const formatNumberWithSeparators: (value: number, precision?: number) => string;
-    export const callAPI: (apiEndpoint: string) => Promise<any>;
+    export const callAPI: (dataSource: string, queryId: string) => Promise<any>;
 }
 /// <amd-module name="@scom/scom-counter/global/index.ts" />
 declare module "@scom/scom-counter/global/index.ts" {
@@ -65,7 +66,8 @@ declare module "@scom/scom-counter/assets.ts" {
 declare module "@scom/scom-counter/data.json.ts" {
     const _default_1: {
         defaultBuilderData: {
-            apiEndpoint: string;
+            dataSource: string;
+            queryId: string;
             title: string;
             options: {
                 counterColName: string;
