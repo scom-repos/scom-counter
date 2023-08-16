@@ -337,6 +337,13 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_4.Styles.Theme.ThemeVars;
     const currentTheme = components_4.Styles.Theme.currentTheme;
+    const DefaultData = {
+        dataSource: scom_chart_data_source_setup_2.DataSource.Dune,
+        queryId: '',
+        title: '',
+        options: undefined,
+        mode: scom_chart_data_source_setup_2.ModeType.LIVE
+    };
     let ScomCounter = class ScomCounter extends components_4.Module {
         static async create(options, parent) {
             let self = new this(parent, options);
@@ -345,13 +352,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
         }
         constructor(parent, options) {
             super(parent, options);
-            this._data = {
-                dataSource: scom_chart_data_source_setup_2.DataSource.Dune,
-                queryId: '',
-                title: '',
-                options: undefined,
-                mode: scom_chart_data_source_setup_2.ModeType.LIVE
-            };
+            this._data = DefaultData;
             this.tag = {};
             this.defaultEdit = true;
         }
@@ -382,13 +383,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     name: 'General',
                     icon: 'cog',
                     command: (builder, userInputData) => {
-                        let _oldData = {
-                            dataSource: scom_chart_data_source_setup_2.DataSource.Dune,
-                            queryId: '',
-                            title: '',
-                            options: undefined,
-                            mode: scom_chart_data_source_setup_2.ModeType.LIVE
-                        };
+                        let _oldData = DefaultData;
                         return {
                             execute: async () => {
                                 _oldData = Object.assign({}, this._data);
@@ -420,13 +415,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     name: 'Data',
                     icon: 'database',
                     command: (builder, userInputData) => {
-                        let _oldData = {
-                            dataSource: scom_chart_data_source_setup_2.DataSource.Dune,
-                            queryId: '',
-                            title: '',
-                            options: undefined,
-                            mode: scom_chart_data_source_setup_2.ModeType.LIVE
-                        };
+                        let _oldData = DefaultData;
                         return {
                             execute: async () => {
                                 _oldData = Object.assign({}, this._data);
@@ -455,8 +444,10 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     customUI: {
                         render: async (data, onConfirm, onChange) => {
                             const vstack = new components_4.VStack(null, { gap: '1rem' });
-                            const dataSourceSetup = new scom_chart_data_source_setup_2.default(null, Object.assign(Object.assign({}, this._data), { chartData: JSON.stringify(this.counterData), onCustomDataChanged: async (data) => {
-                                    onChange(true, Object.assign(Object.assign({}, this._data), data));
+                            const dataSourceSetup = new scom_chart_data_source_setup_2.default(null, Object.assign(Object.assign({}, this._data), { chartData: JSON.stringify(this.counterData), onCustomDataChanged: async (dataSourceSetupData) => {
+                                    if (onChange) {
+                                        onChange(true, Object.assign(Object.assign({}, this._data), dataSourceSetupData));
+                                    }
                                 } }));
                             const hstackBtnConfirm = new components_4.HStack(null, {
                                 verticalAlignment: 'center',

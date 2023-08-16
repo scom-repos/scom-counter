@@ -11,8 +11,8 @@ declare module "@scom/scom-counter/global/interfaces.ts" {
         coloredNegativeValues?: boolean;
     }
     export interface ICounterConfig {
-        dataSource?: string;
-        queryId?: string;
+        dataSource: string;
+        queryId: string;
         title: string;
         description?: string;
         options: ICounterOptions;

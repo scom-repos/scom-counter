@@ -37,6 +37,14 @@ declare global {
   }
 }
 
+const DefaultData: ICounterConfig = {
+  dataSource: DataSource.Dune, 
+  queryId: '', 
+  title: '', 
+  options: undefined, 
+  mode: ModeType.LIVE 
+};
+
 @customModule
 @customElements('i-scom-counter')
 export default class ScomCounter extends Module {
@@ -48,13 +56,7 @@ export default class ScomCounter extends Module {
   private counterElm: VStack;
   private counterData: { [key: string]: string | number }[];
 
-  private _data: ICounterConfig = { 
-    dataSource: DataSource.Dune, 
-    queryId: '', 
-    title: '', 
-    options: undefined, 
-    mode: ModeType.LIVE 
-  };
+  private _data: ICounterConfig = DefaultData;
   tag: any = {};
   defaultEdit: boolean = true;
   readonly onConfirm: () => Promise<void>;
@@ -102,13 +104,7 @@ export default class ScomCounter extends Module {
         name: 'General',
         icon: 'cog',
         command: (builder: any, userInputData: any) => {
-          let _oldData: ICounterConfig = {     
-            dataSource: DataSource.Dune, 
-            queryId: '',  
-            title: '', 
-            options: undefined, 
-            mode: ModeType.LIVE 
-          };
+          let _oldData: ICounterConfig = DefaultData;
           return {
             execute: async () => {
               _oldData = { ...this._data };
@@ -136,13 +132,7 @@ export default class ScomCounter extends Module {
         name: 'Data',
         icon: 'database',
         command: (builder: any, userInputData: any) => {
-          let _oldData: ICounterConfig = { 
-            dataSource: DataSource.Dune, 
-            queryId: '',  
-            title: '', 
-            options: undefined,  
-            mode: ModeType.LIVE 
-          };
+          let _oldData: ICounterConfig = DefaultData;
           return {
             execute: async () => {
               _oldData = { ...this._data };
@@ -167,11 +157,13 @@ export default class ScomCounter extends Module {
             const dataSourceSetup = new ScomChartDataSourceSetup(null, {
               ...this._data, 
               chartData: JSON.stringify(this.counterData),
-              onCustomDataChanged: async (data: any) => {
-                onChange(true, {
-                  ...this._data, 
-                  ...data
-                });
+              onCustomDataChanged: async (dataSourceSetupData: any) => {
+                if (onChange) {
+                  onChange(true, {
+                    ...this._data, 
+                    ...dataSourceSetupData
+                  });
+                }
               }
             });
             const hstackBtnConfirm = new HStack(null, {

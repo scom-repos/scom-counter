@@ -11,8 +11,8 @@ export interface ICounterOptions {
 }
 
 export interface ICounterConfig {
-  dataSource?: string;
-  queryId?: string;
+  dataSource: string;
+  queryId: string;
   title: string;
   description?: string;
   options: ICounterOptions;
