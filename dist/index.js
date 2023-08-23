@@ -22,24 +22,48 @@ define("@scom/scom-counter/global/interfaces.ts", ["require", "exports"], functi
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("@scom/scom-counter/global/utils.ts", ["require", "exports", "@scom/scom-chart-data-source-setup"], function (require, exports, scom_chart_data_source_setup_1) {
+define("@scom/scom-counter/global/utils.ts", ["require", "exports", "@scom/scom-chart-data-source-setup", "@ijstech/eth-wallet"], function (require, exports, scom_chart_data_source_setup_1, eth_wallet_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.callAPI = exports.formatNumberWithSeparators = void 0;
-    const formatNumberWithSeparators = (value, precision) => {
-        if (!value)
-            value = 0;
-        if (precision || precision === 0) {
+    exports.callAPI = exports.formatNumberWithSeparators = exports.isNumeric = void 0;
+    const isNumeric = (value) => {
+        if (value instanceof eth_wallet_1.BigNumber) {
+            return !value.isNaN() && value.isFinite();
+        }
+        else if (typeof value === 'string') {
+            const parsed = parseFloat(value);
+            return !isNaN(parsed) && isFinite(parsed);
+        }
+        else {
+            return !isNaN(value) && isFinite(value);
+        }
+    };
+    exports.isNumeric = isNumeric;
+    const formatNumberWithSeparators = (value, options) => {
+        let bigValue;
+        if (value instanceof eth_wallet_1.BigNumber) {
+            bigValue = value;
+        }
+        else {
+            bigValue = new eth_wallet_1.BigNumber(value);
+        }
+        if (bigValue.isNaN() || !bigValue.isFinite()) {
+            return '0';
+        }
+        if (options.precision || options.precision === 0) {
             let outputStr = '';
-            if (value >= 1) {
-                outputStr = value.toLocaleString('en-US', { maximumFractionDigits: precision });
+            if (bigValue.gte(1)) {
+                outputStr = bigValue.toFormat(options.precision, options.roundingMode || eth_wallet_1.BigNumber.ROUND_HALF_CEIL);
             }
             else {
-                outputStr = value.toLocaleString('en-US', { maximumSignificantDigits: precision });
+                outputStr = bigValue.toFormat(options.precision);
+            }
+            if (outputStr.length > 18) {
+                outputStr = outputStr.substring(0, 18) + '...';
             }
             return outputStr;
         }
-        return value.toLocaleString('en-US');
+        return bigValue.toFormat();
     };
     exports.formatNumberWithSeparators = formatNumberWithSeparators;
     const callAPI = async (dataSource, queryId) => {
@@ -332,7 +356,7 @@ define("@scom/scom-counter/formSchema.ts", ["require", "exports"], function (req
     }
     exports.getEmbedderSchema = getEmbedderSchema;
 });
-define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@scom/scom-counter/global/index.ts", "@scom/scom-counter/index.css.ts", "@scom/scom-counter/assets.ts", "@scom/scom-counter/data.json.ts", "@scom/scom-chart-data-source-setup", "@scom/scom-counter/dataOptionsForm.tsx", "@scom/scom-counter/formSchema.ts"], function (require, exports, components_4, index_1, index_css_1, assets_1, data_json_1, scom_chart_data_source_setup_2, dataOptionsForm_1, formSchema_1) {
+define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@scom/scom-counter/global/index.ts", "@scom/scom-counter/index.css.ts", "@scom/scom-counter/assets.ts", "@scom/scom-counter/data.json.ts", "@scom/scom-chart-data-source-setup", "@scom/scom-counter/dataOptionsForm.tsx", "@scom/scom-counter/formSchema.ts", "@ijstech/eth-wallet"], function (require, exports, components_4, index_1, index_css_1, assets_1, data_json_1, scom_chart_data_source_setup_2, dataOptionsForm_1, formSchema_1, eth_wallet_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_4.Styles.Theme.ThemeVars;
@@ -660,7 +684,9 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             this.onUpdateBlock();
         }
         formatCounter(num, decimals) {
-            return (0, index_1.formatNumberWithSeparators)(num, decimals);
+            return (0, index_1.formatNumberWithSeparators)(num, {
+                precision: decimals
+            });
         }
         async renderCounter(resize) {
             var _a;
@@ -677,8 +703,8 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             this.counterElm.clearInnerHTML();
             if (this.counterData && this.counterData.length) {
                 const value = this.counterData[0][counterColName];
-                const isNumber = typeof value === 'number';
-                let _number = isNumber ? (Number(value) / 100) : 0;
+                const isNumber = (0, index_1.isNumeric)(value);
+                let _number = isNumber ? new eth_wallet_2.BigNumber(value).dividedBy(100) : new eth_wallet_2.BigNumber(0);
                 const lbValue = new components_4.Label(this.counterElm, {
                     caption: `${stringPrefix || ''}${isNumber ? 0 : value}${stringSuffix || ''}`,
                     font: {
@@ -690,11 +716,11 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                 if (isNumber) {
                     if (!lbValue.isConnected)
                         await lbValue.ready();
-                    const increment = Number(value) / 20;
+                    const increment = new eth_wallet_2.BigNumber(value).dividedBy(20);
                     let interval = setInterval(() => {
-                        _number += increment;
-                        if (_number >= Number(value)) {
-                            _number = Number(value);
+                        _number = _number.plus(increment);
+                        if (_number.gte(value)) {
+                            _number = new eth_wallet_2.BigNumber(value);
                             clearInterval(interval);
                         }
                         lbValue.caption = `${stringPrefix || ''}${this.formatCounter(_number, stringDecimal)}${stringSuffix || ''}`;

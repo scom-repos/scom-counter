@@ -13,13 +13,14 @@ import {
   Button,
   Form
 } from '@ijstech/components';
-import { ICounterConfig, formatNumberWithSeparators, callAPI, ICounterOptions } from './global/index';
+import { ICounterConfig, isNumeric, formatNumberWithSeparators, callAPI, ICounterOptions } from './global/index';
 import { containerStyle, counterStyle } from './index.css';
 import assets from './assets';
 import dataJson from './data.json';
 import ScomChartDataSourceSetup, { ModeType, fetchContentByCID, DataSource } from '@scom/scom-chart-data-source-setup';
 import ScomCounterDataOptionsForm from './dataOptionsForm';
 import { getBuilderSchema, getEmbedderSchema } from './formSchema';
+import { BigNumber } from '@ijstech/eth-wallet';
 
 const Theme = Styles.Theme.ThemeVars;
 const currentTheme = Styles.Theme.currentTheme;
@@ -386,8 +387,10 @@ export default class ScomCounter extends Module {
     this.onUpdateBlock();
   }
 
-  private formatCounter(num: number, decimals?: number) {
-    return formatNumberWithSeparators(num, decimals);
+  private formatCounter(num: string | number | BigNumber, decimals?: number) {
+    return formatNumberWithSeparators(num, {
+      precision: decimals
+    });
   }
 
   private async renderCounter(resize?: boolean) {
@@ -402,8 +405,8 @@ export default class ScomCounter extends Module {
     this.counterElm.clearInnerHTML();
     if (this.counterData && this.counterData.length) {
       const value = this.counterData[0][counterColName];
-      const isNumber = typeof value === 'number';
-      let _number = isNumber ? (Number(value) / 100) : 0;
+      const isNumber = isNumeric(value);
+      let _number = isNumber ? new BigNumber(value).dividedBy(100) : new BigNumber(0);
       const lbValue = new Label(this.counterElm, {
         caption: `${stringPrefix || ''}${isNumber ? 0 : value}${stringSuffix || ''}`,
         font: {
@@ -414,11 +417,11 @@ export default class ScomCounter extends Module {
       lbValue.wordBreak = 'break-all';
       if (isNumber) {
         if (!lbValue.isConnected) await lbValue.ready();
-        const increment = Number(value) / 20;
+        const increment = new BigNumber(value).dividedBy(20);
         let interval = setInterval(() => {
-          _number += increment;
-          if (_number >= Number(value)) {
-            _number = Number(value);
+          _number = _number.plus(increment);
+          if (_number.gte(value)) {
+            _number = new BigNumber(value);
             clearInterval(interval);
           }
           lbValue.caption = `${stringPrefix || ''}${this.formatCounter(_number, stringDecimal)}${stringSuffix || ''}`
