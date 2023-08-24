@@ -1,6 +1,6 @@
 import { DataSource } from '@scom/scom-chart-data-source-setup';
 import { BigNumber } from '@ijstech/eth-wallet';
-import { IFormatNumberOptions } from './interfaces';
+import { IFetchDataOptions, IFormatNumberOptions } from './interfaces';
 
 export const isNumeric = (value: string | number | BigNumber): boolean => {
   if (value instanceof BigNumber) {
@@ -43,21 +43,22 @@ export const formatNumberWithSeparators = (value: number | string | BigNumber, o
   return bigValue.toFormat();
 }
 
-export const callAPI = async (dataSource: string, queryId: string) => {
-  if (!dataSource) return [];
+export const callAPI = async (options: IFetchDataOptions) => {
+  if (!options.dataSource) return [];
   try {
     let apiEndpoint = '';
-    switch (dataSource) {
+    switch (options.dataSource) {
       case DataSource.Dune:
-        apiEndpoint = `/dune/query/${queryId}`;
+        apiEndpoint = `/dune/query/${options.queryId}`;
+        break;
+      case DataSource.Custom:
+        apiEndpoint = options.apiEndpoint;
         break;
     }
     if (!apiEndpoint) return [];
     const response = await fetch(apiEndpoint);
-    const jsonData = await response.json(); 
+    const jsonData = await response.json();
     return jsonData.result.rows || [];
-  } catch (error) {
-    console.log(error);
-  }
+  } catch {}
   return [];
 }

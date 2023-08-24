@@ -13,7 +13,8 @@ export interface ICounterOptions {
 
 export interface ICounterConfig {
   dataSource: string;
-  queryId: string;
+  queryId?: string;
+  apiEndpoint?: string;
   title: string;
   description?: string;
   options: ICounterOptions;
@@ -27,4 +28,10 @@ export interface ICounterConfig {
 export interface IFormatNumberOptions {
   precision?: number;
   roundingMode?: BigNumber.RoundingMode;
+}
+
+export interface IFetchDataOptions {
+  dataSource: string;
+  queryId?: string;
+  apiEndpoint?: string;
 }

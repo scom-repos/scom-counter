@@ -13,7 +13,8 @@ declare module "@scom/scom-counter/global/interfaces.ts" {
     }
     export interface ICounterConfig {
         dataSource: string;
-        queryId: string;
+        queryId?: string;
+        apiEndpoint?: string;
         title: string;
         description?: string;
         options: ICounterOptions;
@@ -27,14 +28,19 @@ declare module "@scom/scom-counter/global/interfaces.ts" {
         precision?: number;
         roundingMode?: BigNumber.RoundingMode;
     }
+    export interface IFetchDataOptions {
+        dataSource: string;
+        queryId?: string;
+        apiEndpoint?: string;
+    }
 }
 /// <amd-module name="@scom/scom-counter/global/utils.ts" />
 declare module "@scom/scom-counter/global/utils.ts" {
     import { BigNumber } from '@ijstech/eth-wallet';
-    import { IFormatNumberOptions } from "@scom/scom-counter/global/interfaces.ts";
+    import { IFetchDataOptions, IFormatNumberOptions } from "@scom/scom-counter/global/interfaces.ts";
     export const isNumeric: (value: string | number | BigNumber) => boolean;
     export const formatNumberWithSeparators: (value: number | string | BigNumber, options: IFormatNumberOptions) => string;
-    export const callAPI: (dataSource: string, queryId: string) => Promise<any>;
+    export const callAPI: (options: IFetchDataOptions) => Promise<any>;
 }
 /// <amd-module name="@scom/scom-counter/global/index.ts" />
 declare module "@scom/scom-counter/global/index.ts" {
