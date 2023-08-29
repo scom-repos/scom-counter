@@ -26,21 +26,119 @@ const visualizationOptions = {
     }
 }
 
+const theme = {
+    darkShadow: {
+        type: 'boolean'
+    },
+    fontColor: {
+        type: 'string',
+        format: 'color'
+    },
+    backgroundColor: {
+        type: 'string',
+        format: 'color'
+    },
+    counterNumberColor: {
+        type: 'string',
+        format: 'color'
+    },
+    counterLabelColor: {
+        type: 'string',
+        format: 'color'
+    },
+    // width: {
+    //   type: 'string'
+    // },
+    height: {
+        type: 'string'
+    }
+}
+
+const themeUISchema = {
+    type: 'Category',
+    label: 'Theme',
+    elements: [
+        {
+            type: 'VerticalLayout',
+            elements: [
+                {
+                    type: 'Control',
+                    scope: '#/properties/darkShadow'
+                },
+                {
+                    type: 'HorizontalLayout',
+                    elements: [
+                        {
+                            type: 'Control',
+                            scope: '#/properties/fontColor'
+                        },
+                        {
+                            type: 'Control',
+                            scope: '#/properties/backgroundColor'
+                        }
+                    ]
+                },
+                {
+                    type: 'HorizontalLayout',
+                    elements: [
+                        {
+                            type: 'Control',
+                            scope: '#/properties/counterNumberColor'
+                        },
+                        {
+                            type: 'Control',
+                            scope: '#/properties/counterLabelColor'
+                        }
+                    ]
+                },
+                {
+                    type: 'Control',
+                    scope: '#/properties/height'
+                },
+            ]
+        }
+    ]
+}
+
 export function getBuilderSchema() {
     return {
-        general: {
-            dataSchema: {
-                type: 'object',
-                required: ['title'],
-                properties: {
-                    title: {
-                        type: 'string'
-                    },
-                    description: {
-                        type: 'string'
-                    }
-                }
+        dataSchema: {
+            type: 'object',
+            required: ['title'],
+            properties: {
+                title: {
+                    type: 'string'
+                },
+                description: {
+                    type: 'string'
+                },
+                ...theme
             }
+        },
+        uiSchema: {
+            type: 'Categorization',
+            elements: [
+                {
+                    type: 'Category',
+                    label: 'General',
+                    elements: [
+                        {
+                            type: 'VerticalLayout',
+                            elements: [
+                                {
+                                    type: 'Control',
+                                    scope: '#/properties/title'
+                                },
+                                {
+                                    type: 'Control',
+                                    scope: '#/properties/description'
+                                }
+                            ]
+                        }
+                    ]
+                },
+                themeUISchema
+            ]
         },
         advanced: {
             dataSchema: {
@@ -49,86 +147,49 @@ export function getBuilderSchema() {
                     options: visualizationOptions
                 }
             }
-        },
-        theme: {
-            dataSchema: {
-                type: 'object',
-                properties: {
-                    darkShadow: {
-                        type: 'boolean'
-                    },
-                    fontColor: {
-                        type: 'string',
-                        format: 'color'
-                    },
-                    backgroundColor: {
-                        type: 'string',
-                        format: 'color'
-                    },
-                    counterNumberColor: {
-                        type: 'string',
-                        format: 'color'
-                    },
-                    counterLabelColor: {
-                        type: 'string',
-                        format: 'color'
-                    },
-                    // width: {
-                    //   type: 'string'
-                    // },
-                    height: {
-                        type: 'string'
-                    }
-                }
-            }
         }
     }
 }
 
 export function getEmbedderSchema() {
     return {
-        general: {
-            dataSchema: {
-                type: 'object',
-                required: ['title'],
-                properties: {
-                    title: {
-                        type: 'string'
-                    },
-                    description: {
-                        type: 'string'
-                    }
-                }
+        dataSchema: {
+            type: 'object',
+            required: ['title'],
+            properties: {
+                title: {
+                    type: 'string'
+                },
+                description: {
+                    type: 'string'
+                },
+                ...theme
             }
         },
-        theme: {
-            dataSchema: {
-                type: 'object',
-                properties: {
-                    darkShadow: {
-                        type: 'boolean'
-                    },
-                    fontColor: {
-                        type: 'string',
-                        format: 'color'
-                    },
-                    backgroundColor: {
-                        type: 'string',
-                        format: 'color'
-                    },
-                    counterNumberColor: {
-                        type: 'string',
-                        format: 'color'
-                    },
-                    counterLabelColor: {
-                        type: 'string',
-                        format: 'color'
-                    },
-                    height: {
-                        type: 'string'
-                    }
-                }
-            }
+        uiSchema: {
+            type: 'Categorization',
+            elements: [
+                {
+                    type: 'Category',
+                    label: 'General',
+                    elements: [
+                        {
+                            type: 'VerticalLayout',
+                            elements: [
+                                {
+                                    type: 'Control',
+                                    scope: '#/properties/title'
+                                },
+                                {
+                                    type: 'Control',
+                                    scope: '#/properties/description'
+                                }
+                            ]
+                        }
+                    ]
+                },
+                themeUISchema
+            ]
         }
     }
 }

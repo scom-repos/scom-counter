@@ -11,7 +11,8 @@ import {
   Styles,
   Panel,
   Button,
-  Form
+  Form,
+  IUISchema
 } from '@ijstech/components';
 import { ICounterConfig, isNumeric, formatNumberWithSeparators, callAPI, ICounterOptions } from './global/index';
 import { containerStyle, counterStyle } from './index.css';
@@ -39,12 +40,12 @@ declare global {
 }
 
 const DefaultData: ICounterConfig = {
-  dataSource: DataSource.Dune, 
-  queryId: '', 
+  dataSource: DataSource.Dune,
+  queryId: '',
   apiEndpoint: '',
-  title: '', 
-  options: undefined, 
-  mode: ModeType.LIVE 
+  title: '',
+  options: undefined,
+  mode: ModeType.LIVE
 };
 
 @customModule
@@ -61,9 +62,6 @@ export default class ScomCounter extends Module {
   private _data: ICounterConfig = DefaultData;
   tag: any = {};
   defaultEdit: boolean = true;
-  readonly onConfirm: () => Promise<void>;
-  readonly onDiscard: () => Promise<void>;
-  readonly onEdit: () => Promise<void>;
 
   static async create(options?: ScomCounterElement, parent?: Container) {
     let self = new this(parent, options);
@@ -100,35 +98,54 @@ export default class ScomCounter extends Module {
     this.onUpdateBlock();
   }
 
-  private _getActions(propertiesSchema: IDataSchema, themeSchema: IDataSchema, advancedSchema?: IDataSchema) {
+  private _getActions(dataSchema: IDataSchema, uiSchema: IUISchema, advancedSchema?: IDataSchema) {
     const actions = [
       {
-        name: 'General',
-        icon: 'cog',
+        name: 'Edit',
+        icon: 'edit',
         command: (builder: any, userInputData: any) => {
-          let _oldData: ICounterConfig = DefaultData;
+          let oldData: ICounterConfig = DefaultData;
+          let oldTag = {};
           return {
             execute: async () => {
-              _oldData = { ...this._data };
-              if (userInputData) {
-                if (advancedSchema) {
-                  this._data = { ...this._data, ...userInputData };
-                } else {
-                  this._data = { ...userInputData };
-                }
+              oldData = JSON.parse(JSON.stringify(this._data));
+              const {
+                title,
+                description,
+                ...themeSettings
+              } = userInputData;
+
+              const generalSettings: any = {
+                title,
+                description,
+              };
+
+              if (advancedSchema) {
+                this._data = { ...this._data, ...generalSettings };
+              } else {
+                this._data = { ...generalSettings };
               }
               if (builder?.setData) builder.setData(this._data);
               this.setData(this._data);
+
+              oldTag = JSON.parse(JSON.stringify(this.tag));
+              if (builder?.setTag) builder.setTag(themeSettings);
+              else this.setTag(themeSettings);
             },
             undo: () => {
-              if (advancedSchema) _oldData = { ..._oldData, options: this._data.options };
-              if (builder?.setData) builder.setData(_oldData);
-              this.setData(_oldData);
+              if (advancedSchema) oldData = { ...oldData, options: this._data.options };
+              if (builder?.setData) builder.setData(oldData);
+              this.setData(oldData);
+
+              this.tag = JSON.parse(JSON.stringify(oldTag));
+              if (builder?.setTag) builder.setTag(this.tag);
+              else this.setTag(this.tag);
             },
             redo: () => { }
           }
         },
-        userInputDataSchema: propertiesSchema,
+        userInputDataSchema: dataSchema,
+        userInputUISchema: uiSchema
       },
       {
         name: 'Data',
@@ -156,14 +173,14 @@ export default class ScomCounter extends Module {
         },
         customUI: {
           render: async (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => {
-            const vstack = new VStack(null, {gap: '1rem'});
+            const vstack = new VStack(null, { gap: '1rem' });
             const dataSourceSetup = new ScomChartDataSourceSetup(null, {
-              ...this._data, 
+              ...this._data,
               chartData: JSON.stringify(this.counterData),
               onCustomDataChanged: async (dataSourceSetupData: any) => {
                 if (onChange) {
                   onChange(true, {
-                    ...this._data, 
+                    ...this._data,
                     ...dataSourceSetupData
                   });
                 }
@@ -177,7 +194,7 @@ export default class ScomCounter extends Module {
               caption: 'Confirm',
               width: 'auto',
               height: 40,
-              font: {color: Theme.colors.primary.contrastText}
+              font: { color: Theme.colors.primary.contrastText }
             });
             hstackBtnConfirm.append(button);
             vstack.append(dataSourceSetup);
@@ -190,7 +207,7 @@ export default class ScomCounter extends Module {
             if (onChange) {
               dataOptionsForm.onCustomInputChanged = async (optionsFormData: any) => {
                 onChange(true, {
-                  ...this._data, 
+                  ...this._data,
                   ...optionsFormData,
                   ...dataSourceSetup.data
                 });
@@ -203,7 +220,7 @@ export default class ScomCounter extends Module {
               if (onConfirm) {
                 const optionsFormData = await dataOptionsForm.refreshFormData();
                 onConfirm(true, {
-                  ...this._data, 
+                  ...this._data,
                   ...optionsFormData,
                   ...dataSourceSetup.data
                 });
@@ -213,29 +230,6 @@ export default class ScomCounter extends Module {
             return vstack;
           }
         }
-      },
-      {
-        name: 'Theme Settings',
-        icon: 'palette',
-        command: (builder: any, userInputData: any) => {
-          let oldTag = {};
-          return {
-            execute: async () => {
-              if (!userInputData) return;
-              oldTag = JSON.parse(JSON.stringify(this.tag));
-              if (builder?.setTag) builder.setTag(userInputData);
-              else this.setTag(userInputData);
-            },
-            undo: () => {
-              if (!userInputData) return;
-              this.tag = JSON.parse(JSON.stringify(oldTag));
-              if (builder?.setTag) builder.setTag(this.tag);
-              else this.setTag(this.tag);
-            },
-            redo: () => { }
-          }
-        },
-        userInputDataSchema: themeSchema
       }
     ]
     // if (advancedSchema) {
@@ -274,10 +268,10 @@ export default class ScomCounter extends Module {
         target: 'Builders',
         getActions: () => {
           const builderSchema = getBuilderSchema();
-          const generalSchema = builderSchema.general.dataSchema as IDataSchema;
-          const themeSchema = builderSchema.theme.dataSchema as IDataSchema;
+          const dataSchema = builderSchema.dataSchema as IDataSchema;
+          const uiSchema = builderSchema.uiSchema as IUISchema;
           const advancedSchema = builderSchema.advanced.dataSchema as IDataSchema;
-          return this._getActions(generalSchema, themeSchema, advancedSchema);
+          return this._getActions(dataSchema, uiSchema, advancedSchema);
         },
         getData: this.getData.bind(this),
         setData: async (data: ICounterConfig) => {
@@ -292,9 +286,9 @@ export default class ScomCounter extends Module {
         target: 'Embedders',
         getActions: () => {
           const embedderSchema = getEmbedderSchema();
-          const generalSchema = embedderSchema.general.dataSchema as IDataSchema;
-          const themeSchema = embedderSchema.theme.dataSchema as IDataSchema;
-          return this._getActions(generalSchema, themeSchema)
+          const dataSchema = embedderSchema.dataSchema as IDataSchema;
+          const uiSchema = embedderSchema.uiSchema as IUISchema;
+          return this._getActions(dataSchema, uiSchema);
         },
         getLinkParams: () => {
           const data = this._data || {};
@@ -359,7 +353,7 @@ export default class ScomCounter extends Module {
           this.onUpdateBlock();
           return;
         }
-      } catch {}
+      } catch { }
     }
     this.counterData = [];
     this.onUpdateBlock();
@@ -379,7 +373,7 @@ export default class ScomCounter extends Module {
           this.onUpdateBlock();
           return;
         }
-      } catch {}
+      } catch { }
     }
     this.counterData = [];
     this.onUpdateBlock();
