@@ -18,6 +18,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 define("@scom/scom-counter/global/interfaces.ts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -249,21 +260,113 @@ define("@scom/scom-counter/formSchema.ts", ["require", "exports"], function (req
             }
         }
     };
+    const theme = {
+        darkShadow: {
+            type: 'boolean'
+        },
+        fontColor: {
+            type: 'string',
+            format: 'color'
+        },
+        backgroundColor: {
+            type: 'string',
+            format: 'color'
+        },
+        counterNumberColor: {
+            type: 'string',
+            format: 'color'
+        },
+        counterLabelColor: {
+            type: 'string',
+            format: 'color'
+        },
+        // width: {
+        //   type: 'string'
+        // },
+        height: {
+            type: 'string'
+        }
+    };
+    const themeUISchema = {
+        type: 'Category',
+        label: 'Theme',
+        elements: [
+            {
+                type: 'VerticalLayout',
+                elements: [
+                    {
+                        type: 'Control',
+                        scope: '#/properties/darkShadow'
+                    },
+                    {
+                        type: 'HorizontalLayout',
+                        elements: [
+                            {
+                                type: 'Control',
+                                scope: '#/properties/fontColor'
+                            },
+                            {
+                                type: 'Control',
+                                scope: '#/properties/backgroundColor'
+                            }
+                        ]
+                    },
+                    {
+                        type: 'HorizontalLayout',
+                        elements: [
+                            {
+                                type: 'Control',
+                                scope: '#/properties/counterNumberColor'
+                            },
+                            {
+                                type: 'Control',
+                                scope: '#/properties/counterLabelColor'
+                            }
+                        ]
+                    },
+                    {
+                        type: 'Control',
+                        scope: '#/properties/height'
+                    },
+                ]
+            }
+        ]
+    };
     function getBuilderSchema() {
         return {
-            general: {
-                dataSchema: {
-                    type: 'object',
-                    required: ['title'],
-                    properties: {
-                        title: {
-                            type: 'string'
-                        },
-                        description: {
-                            type: 'string'
-                        }
-                    }
-                }
+            dataSchema: {
+                type: 'object',
+                required: ['title'],
+                properties: Object.assign({ title: {
+                        type: 'string'
+                    }, description: {
+                        type: 'string'
+                    } }, theme)
+            },
+            uiSchema: {
+                type: 'Categorization',
+                elements: [
+                    {
+                        type: 'Category',
+                        label: 'General',
+                        elements: [
+                            {
+                                type: 'VerticalLayout',
+                                elements: [
+                                    {
+                                        type: 'Control',
+                                        scope: '#/properties/title'
+                                    },
+                                    {
+                                        type: 'Control',
+                                        scope: '#/properties/description'
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    themeUISchema
+                ]
             },
             advanced: {
                 dataSchema: {
@@ -272,86 +375,45 @@ define("@scom/scom-counter/formSchema.ts", ["require", "exports"], function (req
                         options: visualizationOptions
                     }
                 }
-            },
-            theme: {
-                dataSchema: {
-                    type: 'object',
-                    properties: {
-                        darkShadow: {
-                            type: 'boolean'
-                        },
-                        fontColor: {
-                            type: 'string',
-                            format: 'color'
-                        },
-                        backgroundColor: {
-                            type: 'string',
-                            format: 'color'
-                        },
-                        counterNumberColor: {
-                            type: 'string',
-                            format: 'color'
-                        },
-                        counterLabelColor: {
-                            type: 'string',
-                            format: 'color'
-                        },
-                        // width: {
-                        //   type: 'string'
-                        // },
-                        height: {
-                            type: 'string'
-                        }
-                    }
-                }
             }
         };
     }
     exports.getBuilderSchema = getBuilderSchema;
     function getEmbedderSchema() {
         return {
-            general: {
-                dataSchema: {
-                    type: 'object',
-                    required: ['title'],
-                    properties: {
-                        title: {
-                            type: 'string'
-                        },
-                        description: {
-                            type: 'string'
-                        }
-                    }
-                }
+            dataSchema: {
+                type: 'object',
+                required: ['title'],
+                properties: Object.assign({ title: {
+                        type: 'string'
+                    }, description: {
+                        type: 'string'
+                    } }, theme)
             },
-            theme: {
-                dataSchema: {
-                    type: 'object',
-                    properties: {
-                        darkShadow: {
-                            type: 'boolean'
-                        },
-                        fontColor: {
-                            type: 'string',
-                            format: 'color'
-                        },
-                        backgroundColor: {
-                            type: 'string',
-                            format: 'color'
-                        },
-                        counterNumberColor: {
-                            type: 'string',
-                            format: 'color'
-                        },
-                        counterLabelColor: {
-                            type: 'string',
-                            format: 'color'
-                        },
-                        height: {
-                            type: 'string'
-                        }
-                    }
-                }
+            uiSchema: {
+                type: 'Categorization',
+                elements: [
+                    {
+                        type: 'Category',
+                        label: 'General',
+                        elements: [
+                            {
+                                type: 'VerticalLayout',
+                                elements: [
+                                    {
+                                        type: 'Control',
+                                        scope: '#/properties/title'
+                                    },
+                                    {
+                                        type: 'Control',
+                                        scope: '#/properties/description'
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    themeUISchema
+                ]
             }
         };
     }
@@ -403,39 +465,54 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             this.height = this.tag.height || 200;
             this.onUpdateBlock();
         }
-        _getActions(propertiesSchema, themeSchema, advancedSchema) {
+        _getActions(dataSchema, uiSchema, advancedSchema) {
             const actions = [
                 {
-                    name: 'General',
-                    icon: 'cog',
+                    name: 'Edit',
+                    icon: 'edit',
                     command: (builder, userInputData) => {
-                        let _oldData = DefaultData;
+                        let oldData = DefaultData;
+                        let oldTag = {};
                         return {
                             execute: async () => {
-                                _oldData = Object.assign({}, this._data);
-                                if (userInputData) {
-                                    if (advancedSchema) {
-                                        this._data = Object.assign(Object.assign({}, this._data), userInputData);
-                                    }
-                                    else {
-                                        this._data = Object.assign({}, userInputData);
-                                    }
+                                oldData = JSON.parse(JSON.stringify(this._data));
+                                const { title, description } = userInputData, themeSettings = __rest(userInputData, ["title", "description"]);
+                                const generalSettings = {
+                                    title,
+                                    description,
+                                };
+                                if (advancedSchema) {
+                                    this._data = Object.assign(Object.assign({}, this._data), generalSettings);
+                                }
+                                else {
+                                    this._data = Object.assign({}, generalSettings);
                                 }
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
                                     builder.setData(this._data);
                                 this.setData(this._data);
+                                oldTag = JSON.parse(JSON.stringify(this.tag));
+                                if (builder === null || builder === void 0 ? void 0 : builder.setTag)
+                                    builder.setTag(themeSettings);
+                                else
+                                    this.setTag(themeSettings);
                             },
                             undo: () => {
                                 if (advancedSchema)
-                                    _oldData = Object.assign(Object.assign({}, _oldData), { options: this._data.options });
+                                    oldData = Object.assign(Object.assign({}, oldData), { options: this._data.options });
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
-                                    builder.setData(_oldData);
-                                this.setData(_oldData);
+                                    builder.setData(oldData);
+                                this.setData(oldData);
+                                this.tag = JSON.parse(JSON.stringify(oldTag));
+                                if (builder === null || builder === void 0 ? void 0 : builder.setTag)
+                                    builder.setTag(this.tag);
+                                else
+                                    this.setTag(this.tag);
                             },
                             redo: () => { }
                         };
                     },
-                    userInputDataSchema: propertiesSchema,
+                    userInputDataSchema: dataSchema,
+                    userInputUISchema: uiSchema
                 },
                 {
                     name: 'Data',
@@ -511,35 +588,6 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                             return vstack;
                         }
                     }
-                },
-                {
-                    name: 'Theme Settings',
-                    icon: 'palette',
-                    command: (builder, userInputData) => {
-                        let oldTag = {};
-                        return {
-                            execute: async () => {
-                                if (!userInputData)
-                                    return;
-                                oldTag = JSON.parse(JSON.stringify(this.tag));
-                                if (builder === null || builder === void 0 ? void 0 : builder.setTag)
-                                    builder.setTag(userInputData);
-                                else
-                                    this.setTag(userInputData);
-                            },
-                            undo: () => {
-                                if (!userInputData)
-                                    return;
-                                this.tag = JSON.parse(JSON.stringify(oldTag));
-                                if (builder === null || builder === void 0 ? void 0 : builder.setTag)
-                                    builder.setTag(this.tag);
-                                else
-                                    this.setTag(this.tag);
-                            },
-                            redo: () => { }
-                        };
-                    },
-                    userInputDataSchema: themeSchema
                 }
             ];
             // if (advancedSchema) {
@@ -577,10 +625,10 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     target: 'Builders',
                     getActions: () => {
                         const builderSchema = (0, formSchema_1.getBuilderSchema)();
-                        const generalSchema = builderSchema.general.dataSchema;
-                        const themeSchema = builderSchema.theme.dataSchema;
+                        const dataSchema = builderSchema.dataSchema;
+                        const uiSchema = builderSchema.uiSchema;
                         const advancedSchema = builderSchema.advanced.dataSchema;
-                        return this._getActions(generalSchema, themeSchema, advancedSchema);
+                        return this._getActions(dataSchema, uiSchema, advancedSchema);
                     },
                     getData: this.getData.bind(this),
                     setData: async (data) => {
@@ -595,9 +643,9 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     target: 'Embedders',
                     getActions: () => {
                         const embedderSchema = (0, formSchema_1.getEmbedderSchema)();
-                        const generalSchema = embedderSchema.general.dataSchema;
-                        const themeSchema = embedderSchema.theme.dataSchema;
-                        return this._getActions(generalSchema, themeSchema);
+                        const dataSchema = embedderSchema.dataSchema;
+                        const uiSchema = embedderSchema.uiSchema;
+                        return this._getActions(dataSchema, uiSchema);
                     },
                     getLinkParams: () => {
                         const data = this._data || {};

@@ -130,19 +130,61 @@ declare module "@scom/scom-counter/dataOptionsForm.tsx" {
 /// <amd-module name="@scom/scom-counter/formSchema.ts" />
 declare module "@scom/scom-counter/formSchema.ts" {
     export function getBuilderSchema(): {
-        general: {
-            dataSchema: {
-                type: string;
-                required: string[];
-                properties: {
-                    title: {
-                        type: string;
-                    };
-                    description: {
-                        type: string;
-                    };
+        dataSchema: {
+            type: string;
+            required: string[];
+            properties: {
+                darkShadow: {
+                    type: string;
+                };
+                fontColor: {
+                    type: string;
+                    format: string;
+                };
+                backgroundColor: {
+                    type: string;
+                    format: string;
+                };
+                counterNumberColor: {
+                    type: string;
+                    format: string;
+                };
+                counterLabelColor: {
+                    type: string;
+                    format: string;
+                };
+                height: {
+                    type: string;
+                };
+                title: {
+                    type: string;
+                };
+                description: {
+                    type: string;
                 };
             };
+        };
+        uiSchema: {
+            type: string;
+            elements: {
+                type: string;
+                label: string;
+                elements: {
+                    type: string;
+                    elements: ({
+                        type: string;
+                        scope: string;
+                        elements?: undefined;
+                    } | {
+                        type: string;
+                        elements: {
+                            type: string;
+                            scope: string;
+                        }[];
+                        scope?: undefined;
+                    })[];
+                }[];
+            }[];
         };
         advanced: {
             dataSchema: {
@@ -178,85 +220,69 @@ declare module "@scom/scom-counter/formSchema.ts" {
                 };
             };
         };
-        theme: {
-            dataSchema: {
-                type: string;
-                properties: {
-                    darkShadow: {
-                        type: string;
-                    };
-                    fontColor: {
-                        type: string;
-                        format: string;
-                    };
-                    backgroundColor: {
-                        type: string;
-                        format: string;
-                    };
-                    counterNumberColor: {
-                        type: string;
-                        format: string;
-                    };
-                    counterLabelColor: {
-                        type: string;
-                        format: string;
-                    };
-                    height: {
-                        type: string;
-                    };
-                };
-            };
-        };
     };
     export function getEmbedderSchema(): {
-        general: {
-            dataSchema: {
-                type: string;
-                required: string[];
-                properties: {
-                    title: {
-                        type: string;
-                    };
-                    description: {
-                        type: string;
-                    };
+        dataSchema: {
+            type: string;
+            required: string[];
+            properties: {
+                darkShadow: {
+                    type: string;
+                };
+                fontColor: {
+                    type: string;
+                    format: string;
+                };
+                backgroundColor: {
+                    type: string;
+                    format: string;
+                };
+                counterNumberColor: {
+                    type: string;
+                    format: string;
+                };
+                counterLabelColor: {
+                    type: string;
+                    format: string;
+                };
+                height: {
+                    type: string;
+                };
+                title: {
+                    type: string;
+                };
+                description: {
+                    type: string;
                 };
             };
         };
-        theme: {
-            dataSchema: {
+        uiSchema: {
+            type: string;
+            elements: {
                 type: string;
-                properties: {
-                    darkShadow: {
+                label: string;
+                elements: {
+                    type: string;
+                    elements: ({
                         type: string;
-                    };
-                    fontColor: {
+                        scope: string;
+                        elements?: undefined;
+                    } | {
                         type: string;
-                        format: string;
-                    };
-                    backgroundColor: {
-                        type: string;
-                        format: string;
-                    };
-                    counterNumberColor: {
-                        type: string;
-                        format: string;
-                    };
-                    counterLabelColor: {
-                        type: string;
-                        format: string;
-                    };
-                    height: {
-                        type: string;
-                    };
-                };
-            };
+                        elements: {
+                            type: string;
+                            scope: string;
+                        }[];
+                        scope?: undefined;
+                    })[];
+                }[];
+            }[];
         };
     };
 }
 /// <amd-module name="@scom/scom-counter" />
 declare module "@scom/scom-counter" {
-    import { Module, ControlElement, Container, IDataSchema, VStack } from '@ijstech/components';
+    import { Module, ControlElement, Container, IDataSchema, VStack, IUISchema } from '@ijstech/components';
     import { ICounterConfig } from "@scom/scom-counter/global/index.ts";
     interface ScomCounterElement extends ControlElement {
         lazyLoad?: boolean;
@@ -280,9 +306,6 @@ declare module "@scom/scom-counter" {
         private _data;
         tag: any;
         defaultEdit: boolean;
-        readonly onConfirm: () => Promise<void>;
-        readonly onDiscard: () => Promise<void>;
-        readonly onEdit: () => Promise<void>;
         static create(options?: ScomCounterElement, parent?: Container): Promise<ScomCounter>;
         constructor(parent?: Container, options?: ScomCounterElement);
         private getData;
@@ -302,6 +325,7 @@ declare module "@scom/scom-counter" {
                     redo: () => void;
                 };
                 userInputDataSchema: IDataSchema;
+                userInputUISchema: IUISchema;
                 customUI?: undefined;
             } | {
                 name: string;
@@ -315,6 +339,7 @@ declare module "@scom/scom-counter" {
                     render: (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => Promise<VStack>;
                 };
                 userInputDataSchema?: undefined;
+                userInputUISchema?: undefined;
             })[];
             getData: any;
             setData: (data: ICounterConfig) => Promise<void>;
@@ -334,6 +359,7 @@ declare module "@scom/scom-counter" {
                     redo: () => void;
                 };
                 userInputDataSchema: IDataSchema;
+                userInputUISchema: IUISchema;
                 customUI?: undefined;
             } | {
                 name: string;
@@ -347,6 +373,7 @@ declare module "@scom/scom-counter" {
                     render: (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => Promise<VStack>;
                 };
                 userInputDataSchema?: undefined;
+                userInputUISchema?: undefined;
             })[];
             getLinkParams: () => {
                 data: string;
