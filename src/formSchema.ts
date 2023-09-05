@@ -1,27 +1,30 @@
-const visualizationOptions = {
-    type: 'object',
-    title: 'Visualization Options',
-    required: ['counterColName'],
-    properties: {
-        counterColName: {
-            title: 'Column',
-            type: 'string'
-        },
-        counterLabel: {
-            title: 'Label',
-            type: 'string'
-        },
-        stringDecimal: {
-            title: 'Decimals',
-            type: 'number'
-        },
-        stringPrefix: {
-            title: 'Prefix',
-            type: 'string'
-        },
-        stringSuffix: {
-            title: 'Suffix',
-            type: 'string'
+function visualizationOptions(columns: string[]) {
+    return {
+        type: 'object',
+        title: 'Visualization Options',
+        required: ['counterColName'],
+        properties: {
+            counterColName: {
+                title: 'Column',
+                type: 'string',
+                enum: columns
+            },
+            counterLabel: {
+                title: 'Label',
+                type: 'string'
+            },
+            stringDecimal: {
+                title: 'Decimals',
+                type: 'number'
+            },
+            stringPrefix: {
+                title: 'Prefix',
+                type: 'string'
+            },
+            stringSuffix: {
+                title: 'Suffix',
+                type: 'string'
+            }
         }
     }
 }
@@ -100,7 +103,7 @@ const themeUISchema = {
     ]
 }
 
-export function getBuilderSchema() {
+export function getBuilderSchema(column: string[]) {
     return {
         dataSchema: {
             type: 'object',
@@ -144,7 +147,7 @@ export function getBuilderSchema() {
             dataSchema: {
                 type: 'object',
                 properties: {
-                    options: visualizationOptions
+                    options: visualizationOptions(column)
                 }
             }
         }

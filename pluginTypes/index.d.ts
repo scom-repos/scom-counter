@@ -28,19 +28,13 @@ declare module "@scom/scom-counter/global/interfaces.ts" {
         precision?: number;
         roundingMode?: BigNumber.RoundingMode;
     }
-    export interface IFetchDataOptions {
-        dataSource: string;
-        queryId?: string;
-        apiEndpoint?: string;
-    }
 }
 /// <amd-module name="@scom/scom-counter/global/utils.ts" />
 declare module "@scom/scom-counter/global/utils.ts" {
     import { BigNumber } from '@ijstech/eth-wallet';
-    import { IFetchDataOptions, IFormatNumberOptions } from "@scom/scom-counter/global/interfaces.ts";
+    import { IFormatNumberOptions } from "@scom/scom-counter/global/interfaces.ts";
     export const isNumeric: (value: string | number | BigNumber) => boolean;
     export const formatNumberWithSeparators: (value: number | string | BigNumber, options: IFormatNumberOptions) => string;
-    export const callAPI: (options: IFetchDataOptions) => Promise<any>;
 }
 /// <amd-module name="@scom/scom-counter/global/index.ts" />
 declare module "@scom/scom-counter/global/index.ts" {
@@ -129,7 +123,7 @@ declare module "@scom/scom-counter/dataOptionsForm.tsx" {
 }
 /// <amd-module name="@scom/scom-counter/formSchema.ts" />
 declare module "@scom/scom-counter/formSchema.ts" {
-    export function getBuilderSchema(): {
+    export function getBuilderSchema(column: string[]): {
         dataSchema: {
             type: string;
             required: string[];
@@ -198,6 +192,7 @@ declare module "@scom/scom-counter/formSchema.ts" {
                             counterColName: {
                                 title: string;
                                 type: string;
+                                enum: string[];
                             };
                             counterLabel: {
                                 title: string;
@@ -302,6 +297,7 @@ declare module "@scom/scom-counter" {
         private lbTitle;
         private lbDescription;
         private counterElm;
+        private columnNames;
         private counterData;
         private _data;
         tag: any;

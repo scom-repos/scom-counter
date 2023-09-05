@@ -11,14 +11,13 @@ import {
   Styles,
   Panel,
   Button,
-  Form,
   IUISchema
 } from '@ijstech/components';
-import { ICounterConfig, isNumeric, formatNumberWithSeparators, callAPI, ICounterOptions } from './global/index';
+import { ICounterConfig, isNumeric, formatNumberWithSeparators, ICounterOptions } from './global/index';
 import { containerStyle, counterStyle } from './index.css';
 import assets from './assets';
 import dataJson from './data.json';
-import ScomChartDataSourceSetup, { ModeType, fetchContentByCID, DataSource } from '@scom/scom-chart-data-source-setup';
+import ScomChartDataSourceSetup, { ModeType, fetchContentByCID, callAPI, DataSource } from '@scom/scom-chart-data-source-setup';
 import ScomCounterDataOptionsForm from './dataOptionsForm';
 import { getBuilderSchema, getEmbedderSchema } from './formSchema';
 import { BigNumber } from '@ijstech/eth-wallet';
@@ -57,6 +56,7 @@ export default class ScomCounter extends Module {
   private lbTitle: Label;
   private lbDescription: Label;
   private counterElm: VStack;
+  private columnNames: string[] = [];
   private counterData: { [key: string]: string | number }[];
 
   private _data: ICounterConfig = DefaultData;
@@ -267,7 +267,7 @@ export default class ScomCounter extends Module {
         name: 'Builder Configurator',
         target: 'Builders',
         getActions: () => {
-          const builderSchema = getBuilderSchema();
+          const builderSchema = getBuilderSchema(this.columnNames);
           const dataSchema = builderSchema.dataSchema as IDataSchema;
           const uiSchema = builderSchema.uiSchema as IUISchema;
           const advancedSchema = builderSchema.advanced.dataSchema as IDataSchema;
@@ -349,18 +349,21 @@ export default class ScomCounter extends Module {
       try {
         const data = await fetchContentByCID(this._data.file.cid);
         if (data) {
-          this.counterData = data;
+          const { metadata, rows } = data;
+          this.counterData = rows;
+          this.columnNames = metadata?.column_names || [];
           this.onUpdateBlock();
           return;
         }
       } catch { }
     }
     this.counterData = [];
+    this.columnNames = [];
     this.onUpdateBlock();
   }
 
   private async renderLiveData() {
-    const dataSource = this._data.dataSource;
+    const dataSource = this._data.dataSource as DataSource;
     if (dataSource) {
       try {
         const data = await callAPI({
@@ -369,13 +372,16 @@ export default class ScomCounter extends Module {
           apiEndpoint: this._data.apiEndpoint
         });
         if (data) {
-          this.counterData = data;
+          const { metadata, rows } = data;
+          this.counterData = rows;
+          this.columnNames = metadata?.column_names || [];
           this.onUpdateBlock();
           return;
         }
       } catch { }
     }
     this.counterData = [];
+    this.columnNames = [];
     this.onUpdateBlock();
   }
 
