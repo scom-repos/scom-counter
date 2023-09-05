@@ -1,16 +1,15 @@
-import { DataSource } from '@scom/scom-chart-data-source-setup';
 import { BigNumber } from '@ijstech/eth-wallet';
-import { IFetchDataOptions, IFormatNumberOptions } from './interfaces';
+import { IFormatNumberOptions } from './interfaces';
 
 export const isNumeric = (value: string | number | BigNumber): boolean => {
   if (value instanceof BigNumber) {
-      return !value.isNaN() && value.isFinite();
-  } else if (typeof value === 'string') {
-      const parsed = parseFloat(value);
-      return !isNaN(parsed) && isFinite(parsed);
-  } else {
-      return !isNaN(value) && isFinite(value);
+    return !value.isNaN() && value.isFinite();
   }
+  if (typeof value === 'string') {
+    const parsed = new BigNumber(value);
+    return !parsed.isNaN() && parsed.isFinite();
+  }
+  return !isNaN(value) && isFinite(value);
 }
 
 export const formatNumberWithSeparators = (value: number | string | BigNumber, options: IFormatNumberOptions): string => {
@@ -41,24 +40,4 @@ export const formatNumberWithSeparators = (value: number | string | BigNumber, o
   }
 
   return bigValue.toFormat();
-}
-
-export const callAPI = async (options: IFetchDataOptions) => {
-  if (!options.dataSource) return [];
-  try {
-    let apiEndpoint = '';
-    switch (options.dataSource) {
-      case DataSource.Dune:
-        apiEndpoint = `/dune/query/${options.queryId}`;
-        break;
-      case DataSource.Custom:
-        apiEndpoint = options.apiEndpoint;
-        break;
-    }
-    if (!apiEndpoint) return [];
-    const response = await fetch(apiEndpoint);
-    const jsonData = await response.json();
-    return jsonData.result.rows || [];
-  } catch {}
-  return [];
 }

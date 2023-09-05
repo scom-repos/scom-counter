@@ -33,21 +33,19 @@ define("@scom/scom-counter/global/interfaces.ts", ["require", "exports"], functi
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("@scom/scom-counter/global/utils.ts", ["require", "exports", "@scom/scom-chart-data-source-setup", "@ijstech/eth-wallet"], function (require, exports, scom_chart_data_source_setup_1, eth_wallet_1) {
+define("@scom/scom-counter/global/utils.ts", ["require", "exports", "@ijstech/eth-wallet"], function (require, exports, eth_wallet_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.callAPI = exports.formatNumberWithSeparators = exports.isNumeric = void 0;
+    exports.formatNumberWithSeparators = exports.isNumeric = void 0;
     const isNumeric = (value) => {
         if (value instanceof eth_wallet_1.BigNumber) {
             return !value.isNaN() && value.isFinite();
         }
-        else if (typeof value === 'string') {
-            const parsed = parseFloat(value);
-            return !isNaN(parsed) && isFinite(parsed);
+        if (typeof value === 'string') {
+            const parsed = new eth_wallet_1.BigNumber(value);
+            return !parsed.isNaN() && parsed.isFinite();
         }
-        else {
-            return !isNaN(value) && isFinite(value);
-        }
+        return !isNaN(value) && isFinite(value);
     };
     exports.isNumeric = isNumeric;
     const formatNumberWithSeparators = (value, options) => {
@@ -77,29 +75,6 @@ define("@scom/scom-counter/global/utils.ts", ["require", "exports", "@scom/scom-
         return bigValue.toFormat();
     };
     exports.formatNumberWithSeparators = formatNumberWithSeparators;
-    const callAPI = async (options) => {
-        if (!options.dataSource)
-            return [];
-        try {
-            let apiEndpoint = '';
-            switch (options.dataSource) {
-                case scom_chart_data_source_setup_1.DataSource.Dune:
-                    apiEndpoint = `/dune/query/${options.queryId}`;
-                    break;
-                case scom_chart_data_source_setup_1.DataSource.Custom:
-                    apiEndpoint = options.apiEndpoint;
-                    break;
-            }
-            if (!apiEndpoint)
-                return [];
-            const response = await fetch(apiEndpoint);
-            const jsonData = await response.json();
-            return jsonData.result.rows || [];
-        }
-        catch (_a) { }
-        return [];
-    };
-    exports.callAPI = callAPI;
 });
 define("@scom/scom-counter/global/index.ts", ["require", "exports", "@scom/scom-counter/global/interfaces.ts", "@scom/scom-counter/global/utils.ts"], function (require, exports, interfaces_1, utils_1) {
     "use strict";
@@ -233,33 +208,36 @@ define("@scom/scom-counter/formSchema.ts", ["require", "exports"], function (req
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getEmbedderSchema = exports.getBuilderSchema = void 0;
     ///<amd-module name='@scom/scom-counter/formSchema.ts'/> 
-    const visualizationOptions = {
-        type: 'object',
-        title: 'Visualization Options',
-        required: ['counterColName'],
-        properties: {
-            counterColName: {
-                title: 'Column',
-                type: 'string'
-            },
-            counterLabel: {
-                title: 'Label',
-                type: 'string'
-            },
-            stringDecimal: {
-                title: 'Decimals',
-                type: 'number'
-            },
-            stringPrefix: {
-                title: 'Prefix',
-                type: 'string'
-            },
-            stringSuffix: {
-                title: 'Suffix',
-                type: 'string'
+    function visualizationOptions(columns) {
+        return {
+            type: 'object',
+            title: 'Visualization Options',
+            required: ['counterColName'],
+            properties: {
+                counterColName: {
+                    title: 'Column',
+                    type: 'string',
+                    enum: columns
+                },
+                counterLabel: {
+                    title: 'Label',
+                    type: 'string'
+                },
+                stringDecimal: {
+                    title: 'Decimals',
+                    type: 'number'
+                },
+                stringPrefix: {
+                    title: 'Prefix',
+                    type: 'string'
+                },
+                stringSuffix: {
+                    title: 'Suffix',
+                    type: 'string'
+                }
             }
-        }
-    };
+        };
+    }
     const theme = {
         darkShadow: {
             type: 'boolean'
@@ -332,7 +310,7 @@ define("@scom/scom-counter/formSchema.ts", ["require", "exports"], function (req
             }
         ]
     };
-    function getBuilderSchema() {
+    function getBuilderSchema(column) {
         return {
             dataSchema: {
                 type: 'object',
@@ -372,7 +350,7 @@ define("@scom/scom-counter/formSchema.ts", ["require", "exports"], function (req
                 dataSchema: {
                     type: 'object',
                     properties: {
-                        options: visualizationOptions
+                        options: visualizationOptions(column)
                     }
                 }
             }
@@ -419,18 +397,18 @@ define("@scom/scom-counter/formSchema.ts", ["require", "exports"], function (req
     }
     exports.getEmbedderSchema = getEmbedderSchema;
 });
-define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@scom/scom-counter/global/index.ts", "@scom/scom-counter/index.css.ts", "@scom/scom-counter/assets.ts", "@scom/scom-counter/data.json.ts", "@scom/scom-chart-data-source-setup", "@scom/scom-counter/dataOptionsForm.tsx", "@scom/scom-counter/formSchema.ts", "@ijstech/eth-wallet"], function (require, exports, components_4, index_1, index_css_1, assets_1, data_json_1, scom_chart_data_source_setup_2, dataOptionsForm_1, formSchema_1, eth_wallet_2) {
+define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@scom/scom-counter/global/index.ts", "@scom/scom-counter/index.css.ts", "@scom/scom-counter/assets.ts", "@scom/scom-counter/data.json.ts", "@scom/scom-chart-data-source-setup", "@scom/scom-counter/dataOptionsForm.tsx", "@scom/scom-counter/formSchema.ts", "@ijstech/eth-wallet"], function (require, exports, components_4, index_1, index_css_1, assets_1, data_json_1, scom_chart_data_source_setup_1, dataOptionsForm_1, formSchema_1, eth_wallet_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_4.Styles.Theme.ThemeVars;
     const currentTheme = components_4.Styles.Theme.currentTheme;
     const DefaultData = {
-        dataSource: scom_chart_data_source_setup_2.DataSource.Dune,
+        dataSource: scom_chart_data_source_setup_1.DataSource.Dune,
         queryId: '',
         apiEndpoint: '',
         title: '',
         options: undefined,
-        mode: scom_chart_data_source_setup_2.ModeType.LIVE
+        mode: scom_chart_data_source_setup_1.ModeType.LIVE
     };
     let ScomCounter = class ScomCounter extends components_4.Module {
         static async create(options, parent) {
@@ -440,6 +418,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
         }
         constructor(parent, options) {
             super(parent, options);
+            this.columnNames = [];
             this._data = DefaultData;
             this.tag = {};
             this.defaultEdit = true;
@@ -549,7 +528,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     customUI: {
                         render: async (data, onConfirm, onChange) => {
                             const vstack = new components_4.VStack(null, { gap: '1rem' });
-                            const dataSourceSetup = new scom_chart_data_source_setup_2.default(null, Object.assign(Object.assign({}, this._data), { chartData: JSON.stringify(this.counterData), onCustomDataChanged: async (dataSourceSetupData) => {
+                            const dataSourceSetup = new scom_chart_data_source_setup_1.default(null, Object.assign(Object.assign({}, this._data), { chartData: JSON.stringify(this.counterData), onCustomDataChanged: async (dataSourceSetupData) => {
                                     if (onChange) {
                                         onChange(true, Object.assign(Object.assign({}, this._data), dataSourceSetupData));
                                     }
@@ -576,9 +555,9 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                             }
                             button.onClick = async () => {
                                 const { dataSource, file, mode } = dataSourceSetup.data;
-                                if (mode === scom_chart_data_source_setup_2.ModeType.LIVE && !dataSource)
+                                if (mode === scom_chart_data_source_setup_1.ModeType.LIVE && !dataSource)
                                     return;
-                                if (mode === scom_chart_data_source_setup_2.ModeType.SNAPSHOT && !(file === null || file === void 0 ? void 0 : file.cid))
+                                if (mode === scom_chart_data_source_setup_1.ModeType.SNAPSHOT && !(file === null || file === void 0 ? void 0 : file.cid))
                                     return;
                                 if (onConfirm) {
                                     const optionsFormData = await dataOptionsForm.refreshFormData();
@@ -624,7 +603,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     name: 'Builder Configurator',
                     target: 'Builders',
                     getActions: () => {
-                        const builderSchema = (0, formSchema_1.getBuilderSchema)();
+                        const builderSchema = (0, formSchema_1.getBuilderSchema)(this.columnNames);
                         const dataSchema = builderSchema.dataSchema;
                         const uiSchema = builderSchema.uiSchema;
                         const advancedSchema = builderSchema.advanced.dataSchema;
@@ -689,7 +668,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
         async updateCounterData() {
             var _a;
             this.loadingElm.visible = true;
-            if (((_a = this._data) === null || _a === void 0 ? void 0 : _a.mode) === scom_chart_data_source_setup_2.ModeType.SNAPSHOT)
+            if (((_a = this._data) === null || _a === void 0 ? void 0 : _a.mode) === scom_chart_data_source_setup_1.ModeType.SNAPSHOT)
                 await this.renderSnapshotData();
             else
                 await this.renderLiveData();
@@ -699,9 +678,11 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             var _a;
             if ((_a = this._data.file) === null || _a === void 0 ? void 0 : _a.cid) {
                 try {
-                    const data = await (0, scom_chart_data_source_setup_2.fetchContentByCID)(this._data.file.cid);
+                    const data = await (0, scom_chart_data_source_setup_1.fetchContentByCID)(this._data.file.cid);
                     if (data) {
-                        this.counterData = data;
+                        const { metadata, rows } = data;
+                        this.counterData = rows;
+                        this.columnNames = (metadata === null || metadata === void 0 ? void 0 : metadata.column_names) || [];
                         this.onUpdateBlock();
                         return;
                     }
@@ -709,19 +690,22 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                 catch (_b) { }
             }
             this.counterData = [];
+            this.columnNames = [];
             this.onUpdateBlock();
         }
         async renderLiveData() {
             const dataSource = this._data.dataSource;
             if (dataSource) {
                 try {
-                    const data = await (0, index_1.callAPI)({
+                    const data = await (0, scom_chart_data_source_setup_1.callAPI)({
                         dataSource,
                         queryId: this._data.queryId,
                         apiEndpoint: this._data.apiEndpoint
                     });
                     if (data) {
-                        this.counterData = data;
+                        const { metadata, rows } = data;
+                        this.counterData = rows;
+                        this.columnNames = (metadata === null || metadata === void 0 ? void 0 : metadata.column_names) || [];
                         this.onUpdateBlock();
                         return;
                     }
@@ -729,6 +713,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                 catch (_a) { }
             }
             this.counterData = [];
+            this.columnNames = [];
             this.onUpdateBlock();
         }
         formatCounter(num, decimals) {
