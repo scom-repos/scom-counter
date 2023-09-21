@@ -32,9 +32,7 @@ declare module "@scom/scom-counter/global/interfaces.ts" {
 /// <amd-module name="@scom/scom-counter/global/utils.ts" />
 declare module "@scom/scom-counter/global/utils.ts" {
     import { BigNumber } from '@ijstech/eth-wallet';
-    import { IFormatNumberOptions } from "@scom/scom-counter/global/interfaces.ts";
     export const isNumeric: (value: string | number | BigNumber) => boolean;
-    export const formatNumberWithSeparators: (value: number | string | BigNumber, options: IFormatNumberOptions) => string;
 }
 /// <amd-module name="@scom/scom-counter/global/index.ts" />
 declare module "@scom/scom-counter/global/index.ts" {
