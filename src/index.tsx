@@ -11,9 +11,10 @@ import {
   Styles,
   Panel,
   Button,
-  IUISchema
+  IUISchema,
+  FormatUtils
 } from '@ijstech/components';
-import { ICounterConfig, isNumeric, formatNumberWithSeparators, ICounterOptions } from './global/index';
+import { ICounterConfig, isNumeric, ICounterOptions } from './global/index';
 import { containerStyle, counterStyle } from './index.css';
 import assets from './assets';
 import dataJson from './data.json';
@@ -386,9 +387,8 @@ export default class ScomCounter extends Module {
   }
 
   private formatCounter(num: string | number | BigNumber, decimals?: number) {
-    return formatNumberWithSeparators(num, {
-      precision: decimals
-    });
+    if (typeof num === 'object') num = num.toString();
+    return FormatUtils.formatNumber(num, { decimalFigures: decimals});
   }
 
   private async renderCounter(resize?: boolean) {

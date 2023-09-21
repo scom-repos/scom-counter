@@ -36,7 +36,7 @@ define("@scom/scom-counter/global/interfaces.ts", ["require", "exports"], functi
 define("@scom/scom-counter/global/utils.ts", ["require", "exports", "@ijstech/eth-wallet"], function (require, exports, eth_wallet_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.formatNumberWithSeparators = exports.isNumeric = void 0;
+    exports.isNumeric = void 0;
     const isNumeric = (value) => {
         if (value instanceof eth_wallet_1.BigNumber) {
             return !value.isNaN() && value.isFinite();
@@ -48,34 +48,33 @@ define("@scom/scom-counter/global/utils.ts", ["require", "exports", "@ijstech/et
         return !isNaN(value) && isFinite(value);
     };
     exports.isNumeric = isNumeric;
-    const formatNumberWithSeparators = (value, options) => {
-        let bigValue;
-        if (value instanceof eth_wallet_1.BigNumber) {
-            bigValue = value;
-        }
-        else {
-            bigValue = new eth_wallet_1.BigNumber(value);
-        }
-        if (bigValue.isNaN() || !bigValue.isFinite()) {
-            return '0';
-        }
-        if (options.precision || options.precision === 0) {
-            let outputStr = '';
-            if (bigValue.gte(1)) {
-                outputStr = bigValue.toFormat(options.precision, options.roundingMode || eth_wallet_1.BigNumber.ROUND_HALF_CEIL);
-            }
-            else {
-                outputStr = bigValue.toFormat(options.precision);
-            }
-            if (outputStr.length > 18) {
-                outputStr = outputStr.substring(0, 18) + '...';
-            }
-            return outputStr;
-        }
-        return bigValue.toFormat();
-    };
-    exports.formatNumberWithSeparators = formatNumberWithSeparators;
 });
+// export const formatNumberWithSeparators = (value: number | string | BigNumber, options: IFormatNumberOptions): string => {
+//   let bigValue: BigNumber;
+//   if (value instanceof BigNumber) {
+//     bigValue = value;
+//   } 
+//   else {
+//     bigValue = new BigNumber(value);
+//   }
+//   if (bigValue.isNaN() || !bigValue.isFinite()) {
+//     return '0';
+//   }
+//   if (options.precision || options.precision === 0) {
+//     let outputStr = '';
+//     if (bigValue.gte(1)) {
+//       outputStr = bigValue.toFormat(options.precision, options.roundingMode || BigNumber.ROUND_HALF_CEIL);
+//     } 
+//     else {
+//       outputStr = bigValue.toFormat(options.precision);
+//     }
+//     if (outputStr.length > 18) {
+//       outputStr = outputStr.substring(0, 18) + '...';
+//     }
+//     return outputStr;
+//   }
+//   return bigValue.toFormat();
+// }
 define("@scom/scom-counter/global/index.ts", ["require", "exports", "@scom/scom-counter/global/interfaces.ts", "@scom/scom-counter/global/utils.ts"], function (require, exports, interfaces_1, utils_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -717,9 +716,9 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             this.onUpdateBlock();
         }
         formatCounter(num, decimals) {
-            return (0, index_1.formatNumberWithSeparators)(num, {
-                precision: decimals
-            });
+            if (typeof num === 'object')
+                num = num.toString();
+            return components_4.FormatUtils.formatNumber(num, { decimalFigures: decimals });
         }
         async renderCounter(resize) {
             var _a;
