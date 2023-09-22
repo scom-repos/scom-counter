@@ -15,7 +15,7 @@ import {
   FormatUtils
 } from '@ijstech/components';
 import { ICounterConfig, isNumeric, ICounterOptions } from './global/index';
-import { containerStyle, counterStyle } from './index.css';
+import { containerStyle, counterStyle, textStyle } from './index.css';
 import assets from './assets';
 import dataJson from './data.json';
 import ScomChartDataSourceSetup, { ModeType, fetchContentByCID, callAPI, DataSource } from '@scom/scom-chart-data-source-setup';
@@ -87,7 +87,15 @@ export default class ScomCounter extends Module {
     return this.tag;
   }
 
-  private async setTag(value: any) {
+  private async setTag(value: any, fromParent?: boolean) {
+    if (fromParent) {
+      this.tag.parentFontColor = value.fontColor;
+      this.tag.parentCustomFontColor = value.customFontColor;
+      this.tag.parentBackgroundColor = value.backgroundColor;
+      this.tag.parentCustomBackgroundColor = value.customBackgoundColor;
+      this.onUpdateBlock();
+      return;
+    }
     const newValue = value || {};
     for (let prop in newValue) {
       if (newValue.hasOwnProperty(prop)) {
@@ -325,10 +333,11 @@ export default class ScomCounter extends Module {
     if (this.vStackCounter) {
       this.vStackCounter.style.boxShadow = this.tag?.darkShadow ? '0 -2px 10px rgba(0, 0, 0, 1)' : 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
     }
-    this.updateStyle('--text-primary', this.tag?.fontColor);
-    this.updateStyle('--background-main', this.tag?.backgroundColor);
-    this.updateStyle('--colors-primary-main', this.tag?.counterNumberColor);
-    this.updateStyle('--colors-primary-dark', this.tag?.counterLabelColor);
+    const tags = this.tag || {};
+    this.updateStyle('--custom-text-color', tags.customFontColor ? tags.fontColor : tags.parentCustomFontColor ? tags.parentFontColor : '');
+    this.updateStyle('--custom-background-color', tags.customBackgroundColor ? tags.backgroundColor : tags.parentCustomBackgroundColor ? tags.parentBackgroundColor : '');
+    this.updateStyle('--colors-primary-main', tags.counterNumberColor);
+    this.updateStyle('--colors-primary-dark', tags.counterLabelColor);
   }
 
   private onUpdateBlock() {
@@ -442,16 +451,11 @@ export default class ScomCounter extends Module {
     this.isReadyCallbackQueued = true;
     super.init();
     this.setTag({
-      fontColor: currentTheme.text.primary,
-      backgroundColor: currentTheme.background.main,
       counterNumberColor: currentTheme.colors.primary.main,
       counterLabelColor: currentTheme.colors.primary.dark,
       height: 200,
       darkShadow: false
     })
-    // const { width, height, darkShadow } = this.tag || {};
-    // this.width = width || 700;
-    // this.height = height || 200;
     this.maxWidth = '100%';
     this.vStackCounter.style.boxShadow = 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
     this.classList.add(counterStyle);
@@ -476,7 +480,6 @@ export default class ScomCounter extends Module {
       <i-vstack
         id="vStackCounter"
         position="relative"
-        background={{ color: Theme.background.main }}
         height="100%"
         padding={{ top: 10, bottom: 10, left: 10, right: 10 }}
         class={containerStyle}
@@ -496,8 +499,8 @@ export default class ScomCounter extends Module {
           margin={{ left: 'auto', right: 'auto', bottom: 10 }}
           verticalAlignment="center"
         >
-          <i-label id="lbTitle" font={{ bold: true, color: Theme.text.primary }} />
-          <i-label id="lbDescription" margin={{ top: 5 }} font={{ color: Theme.text.primary }} />
+          <i-label id="lbTitle" font={{ bold: true }} class={textStyle} />
+          <i-label id="lbDescription" margin={{ top: 5 }} class={textStyle} />
         </i-vstack>
         <i-vstack id="counterElm" margin={{ top: 16, bottom: 32 }} horizontalAlignment="center" width="100%" height="100%" class="text-center" />
       </i-vstack>

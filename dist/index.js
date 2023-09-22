@@ -84,13 +84,17 @@ define("@scom/scom-counter/global/index.ts", ["require", "exports", "@scom/scom-
 define("@scom/scom-counter/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.counterStyle = exports.containerStyle = void 0;
+    exports.counterStyle = exports.textStyle = exports.containerStyle = void 0;
     exports.containerStyle = components_1.Styles.style({
         width: 'var(--layout-container-width)',
         maxWidth: 'var(--layout-container-max_width)',
         textAlign: 'var(--layout-container-text_align)',
         margin: '0 auto',
-        padding: 10
+        padding: 10,
+        background: 'var(--custom-background-color, var(--background-main))'
+    });
+    exports.textStyle = components_1.Styles.style({
+        color: 'var(--custom-text-color, var(--text-primary))'
     });
     exports.counterStyle = components_1.Styles.style({
         display: 'block',
@@ -241,9 +245,15 @@ define("@scom/scom-counter/formSchema.ts", ["require", "exports"], function (req
         darkShadow: {
             type: 'boolean'
         },
+        customFontColor: {
+            type: 'boolean'
+        },
         fontColor: {
             type: 'string',
             format: 'color'
+        },
+        customBackgroundColor: {
+            type: 'boolean'
         },
         backgroundColor: {
             type: 'string',
@@ -257,9 +267,6 @@ define("@scom/scom-counter/formSchema.ts", ["require", "exports"], function (req
             type: 'string',
             format: 'color'
         },
-        // width: {
-        //   type: 'string'
-        // },
         height: {
             type: 'string'
         }
@@ -272,19 +279,46 @@ define("@scom/scom-counter/formSchema.ts", ["require", "exports"], function (req
                 type: 'VerticalLayout',
                 elements: [
                     {
-                        type: 'Control',
-                        scope: '#/properties/darkShadow'
+                        type: 'HorizontalLayout',
+                        elements: [
+                            {
+                                type: 'Control',
+                                scope: '#/properties/customFontColor'
+                            },
+                            {
+                                type: 'Control',
+                                scope: '#/properties/fontColor',
+                                rule: {
+                                    effect: 'ENABLE',
+                                    condition: {
+                                        scope: '#/properties/customFontColor',
+                                        schema: {
+                                            const: true
+                                        }
+                                    }
+                                }
+                            }
+                        ]
                     },
                     {
                         type: 'HorizontalLayout',
                         elements: [
                             {
                                 type: 'Control',
-                                scope: '#/properties/fontColor'
+                                scope: '#/properties/customBackgroundColor'
                             },
                             {
                                 type: 'Control',
-                                scope: '#/properties/backgroundColor'
+                                scope: '#/properties/backgroundColor',
+                                rule: {
+                                    effect: 'ENABLE',
+                                    condition: {
+                                        scope: '#/properties/customBackgroundColor',
+                                        schema: {
+                                            const: true
+                                        }
+                                    }
+                                }
                             }
                         ]
                     },
@@ -302,9 +336,18 @@ define("@scom/scom-counter/formSchema.ts", ["require", "exports"], function (req
                         ]
                     },
                     {
-                        type: 'Control',
-                        scope: '#/properties/height'
-                    },
+                        type: 'HorizontalLayout',
+                        elements: [
+                            {
+                                type: 'Control',
+                                scope: '#/properties/darkShadow'
+                            },
+                            {
+                                type: 'Control',
+                                scope: '#/properties/height'
+                            }
+                        ]
+                    }
                 ]
             }
         ]
@@ -432,7 +475,15 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
         getTag() {
             return this.tag;
         }
-        async setTag(value) {
+        async setTag(value, fromParent) {
+            if (fromParent) {
+                this.tag.parentFontColor = value.fontColor;
+                this.tag.parentCustomFontColor = value.customFontColor;
+                this.tag.parentBackgroundColor = value.backgroundColor;
+                this.tag.parentCustomBackgroundColor = value.customBackgoundColor;
+                this.onUpdateBlock();
+                return;
+            }
             const newValue = value || {};
             for (let prop in newValue) {
                 if (newValue.hasOwnProperty(prop)) {
@@ -651,14 +702,15 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             value ? this.style.setProperty(name, value) : this.style.removeProperty(name);
         }
         updateTheme() {
-            var _a, _b, _c, _d, _e;
+            var _a;
             if (this.vStackCounter) {
                 this.vStackCounter.style.boxShadow = ((_a = this.tag) === null || _a === void 0 ? void 0 : _a.darkShadow) ? '0 -2px 10px rgba(0, 0, 0, 1)' : 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
             }
-            this.updateStyle('--text-primary', (_b = this.tag) === null || _b === void 0 ? void 0 : _b.fontColor);
-            this.updateStyle('--background-main', (_c = this.tag) === null || _c === void 0 ? void 0 : _c.backgroundColor);
-            this.updateStyle('--colors-primary-main', (_d = this.tag) === null || _d === void 0 ? void 0 : _d.counterNumberColor);
-            this.updateStyle('--colors-primary-dark', (_e = this.tag) === null || _e === void 0 ? void 0 : _e.counterLabelColor);
+            const tags = this.tag || {};
+            this.updateStyle('--custom-text-color', tags.customFontColor ? tags.fontColor : tags.parentCustomFontColor ? tags.parentFontColor : '');
+            this.updateStyle('--custom-background-color', tags.customBackgroundColor ? tags.backgroundColor : tags.parentCustomBackgroundColor ? tags.parentBackgroundColor : '');
+            this.updateStyle('--colors-primary-main', tags.counterNumberColor);
+            this.updateStyle('--colors-primary-dark', tags.counterLabelColor);
         }
         onUpdateBlock() {
             this.renderCounter();
@@ -773,16 +825,11 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             this.isReadyCallbackQueued = true;
             super.init();
             this.setTag({
-                fontColor: currentTheme.text.primary,
-                backgroundColor: currentTheme.background.main,
                 counterNumberColor: currentTheme.colors.primary.main,
                 counterLabelColor: currentTheme.colors.primary.dark,
                 height: 200,
                 darkShadow: false
             });
-            // const { width, height, darkShadow } = this.tag || {};
-            // this.width = width || 700;
-            // this.height = height || 200;
             this.maxWidth = '100%';
             this.vStackCounter.style.boxShadow = 'rgba(0, 0, 0, 0.16) 0px 1px 4px';
             this.classList.add(index_css_1.counterStyle);
@@ -802,13 +849,13 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             });
         }
         render() {
-            return (this.$render("i-vstack", { id: "vStackCounter", position: "relative", background: { color: Theme.background.main }, height: "100%", padding: { top: 10, bottom: 10, left: 10, right: 10 }, class: index_css_1.containerStyle },
+            return (this.$render("i-vstack", { id: "vStackCounter", position: "relative", height: "100%", padding: { top: 10, bottom: 10, left: 10, right: 10 }, class: index_css_1.containerStyle },
                 this.$render("i-vstack", { id: "loadingElm", class: "i-loading-overlay" },
                     this.$render("i-vstack", { class: "i-loading-spinner", horizontalAlignment: "center", verticalAlignment: "center" },
                         this.$render("i-icon", { class: "i-loading-spinner_icon", image: { url: assets_1.default.fullPath('img/loading.svg'), width: 36, height: 36 } }))),
                 this.$render("i-vstack", { id: "vStackInfo", width: "100%", maxWidth: "100%", margin: { left: 'auto', right: 'auto', bottom: 10 }, verticalAlignment: "center" },
-                    this.$render("i-label", { id: "lbTitle", font: { bold: true, color: Theme.text.primary } }),
-                    this.$render("i-label", { id: "lbDescription", margin: { top: 5 }, font: { color: Theme.text.primary } })),
+                    this.$render("i-label", { id: "lbTitle", font: { bold: true }, class: index_css_1.textStyle }),
+                    this.$render("i-label", { id: "lbDescription", margin: { top: 5 }, class: index_css_1.textStyle })),
                 this.$render("i-vstack", { id: "counterElm", margin: { top: 16, bottom: 32 }, horizontalAlignment: "center", width: "100%", height: "100%", class: "text-center" })));
         }
     };

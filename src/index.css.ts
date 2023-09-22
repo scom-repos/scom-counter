@@ -5,7 +5,12 @@ export const containerStyle = Styles.style({
   maxWidth: 'var(--layout-container-max_width)',
   textAlign: ('var(--layout-container-text_align)' as any),
   margin: '0 auto',
-  padding: 10
+  padding: 10,
+  background: 'var(--custom-background-color, var(--background-main))'
+})
+
+export const textStyle = Styles.style({
+  color: 'var(--custom-text-color, var(--text-primary))'
 })
 
 export const counterStyle = Styles.style({
