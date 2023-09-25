@@ -58,6 +58,7 @@ declare module "@scom/scom-counter/global/index.ts" {
 /// <amd-module name="@scom/scom-counter/index.css.ts" />
 declare module "@scom/scom-counter/index.css.ts" {
     export const containerStyle: string;
+    export const textStyle: string;
     export const counterStyle: string;
 }
 /// <amd-module name="@scom/scom-counter/assets.ts" />
@@ -129,9 +130,15 @@ declare module "@scom/scom-counter/formSchema.ts" {
                 darkShadow: {
                     type: string;
                 };
+                customFontColor: {
+                    type: string;
+                };
                 fontColor: {
                     type: string;
                     format: string;
+                };
+                customBackgroundColor: {
+                    type: string;
                 };
                 backgroundColor: {
                     type: string;
@@ -169,10 +176,23 @@ declare module "@scom/scom-counter/formSchema.ts" {
                         elements?: undefined;
                     } | {
                         type: string;
-                        elements: {
+                        elements: ({
                             type: string;
                             scope: string;
-                        }[];
+                            rule?: undefined;
+                        } | {
+                            type: string;
+                            scope: string;
+                            rule: {
+                                effect: string;
+                                condition: {
+                                    scope: string;
+                                    schema: {
+                                        const: boolean;
+                                    };
+                                };
+                            };
+                        })[];
                         scope?: undefined;
                     })[];
                 }[];
@@ -222,9 +242,15 @@ declare module "@scom/scom-counter/formSchema.ts" {
                 darkShadow: {
                     type: string;
                 };
+                customFontColor: {
+                    type: string;
+                };
                 fontColor: {
                     type: string;
                     format: string;
+                };
+                customBackgroundColor: {
+                    type: string;
                 };
                 backgroundColor: {
                     type: string;
@@ -262,10 +288,23 @@ declare module "@scom/scom-counter/formSchema.ts" {
                         elements?: undefined;
                     } | {
                         type: string;
-                        elements: {
+                        elements: ({
                             type: string;
                             scope: string;
-                        }[];
+                            rule?: undefined;
+                        } | {
+                            type: string;
+                            scope: string;
+                            rule: {
+                                effect: string;
+                                condition: {
+                                    scope: string;
+                                    schema: {
+                                        const: boolean;
+                                    };
+                                };
+                            };
+                        })[];
                         scope?: undefined;
                     })[];
                 }[];
