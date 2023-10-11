@@ -1,5 +1,4 @@
 import { BigNumber } from '@ijstech/eth-wallet';
-import { IFormatNumberOptions } from './interfaces';
 
 export const isNumeric = (value: string | number | BigNumber): boolean => {
   if (value instanceof BigNumber) {
@@ -12,32 +11,22 @@ export const isNumeric = (value: string | number | BigNumber): boolean => {
   return !isNaN(value) && isFinite(value);
 }
 
-// export const formatNumberWithSeparators = (value: number | string | BigNumber, options: IFormatNumberOptions): string => {
-//   let bigValue: BigNumber;
-//   if (value instanceof BigNumber) {
-//     bigValue = value;
-//   } 
-//   else {
-//     bigValue = new BigNumber(value);
-//   }
+export const groupDataByField = (arr: { [key: string]: any }[], field: string, key: string) => {
+  const groups: Record<string, any[]> = {};
+  for (const item of arr) {
+    const val = item[field];
+    if (!groups.hasOwnProperty(val)) {
+      groups[val] = [];
+    }
+    groups[val].push(item);
+  }
+  return groups[key] || [];
+}
 
-//   if (bigValue.isNaN() || !bigValue.isFinite()) {
-//     return '0';
-//   }
-
-//   if (options.precision || options.precision === 0) {
-//     let outputStr = '';
-//     if (bigValue.gte(1)) {
-//       outputStr = bigValue.toFormat(options.precision, options.roundingMode || BigNumber.ROUND_HALF_CEIL);
-//     } 
-//     else {
-//       outputStr = bigValue.toFormat(options.precision);
-//     }
-//     if (outputStr.length > 18) {
-//       outputStr = outputStr.substring(0, 18) + '...';
-//     }
-//     return outputStr;
-//   }
-
-//   return bigValue.toFormat();
-// }
+export const getAverageValue = (arr: { [key: string]: any }[], key: string) => {
+  if (arr.length === 0) {
+    return 0;
+  }
+  const sum = arr.reduce((total: number, item: any) => total + item[key], 0);
+  return sum / arr.length;
+}

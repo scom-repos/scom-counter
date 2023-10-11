@@ -36,7 +36,7 @@ define("@scom/scom-counter/global/interfaces.ts", ["require", "exports"], functi
 define("@scom/scom-counter/global/utils.ts", ["require", "exports", "@ijstech/eth-wallet"], function (require, exports, eth_wallet_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.isNumeric = void 0;
+    exports.getAverageValue = exports.groupDataByField = exports.isNumeric = void 0;
     const isNumeric = (value) => {
         if (value instanceof eth_wallet_1.BigNumber) {
             return !value.isNaN() && value.isFinite();
@@ -48,36 +48,31 @@ define("@scom/scom-counter/global/utils.ts", ["require", "exports", "@ijstech/et
         return !isNaN(value) && isFinite(value);
     };
     exports.isNumeric = isNumeric;
+    const groupDataByField = (arr, field, key) => {
+        const groups = {};
+        for (const item of arr) {
+            const val = item[field];
+            if (!groups.hasOwnProperty(val)) {
+                groups[val] = [];
+            }
+            groups[val].push(item);
+        }
+        return groups[key] || [];
+    };
+    exports.groupDataByField = groupDataByField;
+    const getAverageValue = (arr, key) => {
+        if (arr.length === 0) {
+            return 0;
+        }
+        const sum = arr.reduce((total, item) => total + item[key], 0);
+        return sum / arr.length;
+    };
+    exports.getAverageValue = getAverageValue;
 });
-// export const formatNumberWithSeparators = (value: number | string | BigNumber, options: IFormatNumberOptions): string => {
-//   let bigValue: BigNumber;
-//   if (value instanceof BigNumber) {
-//     bigValue = value;
-//   } 
-//   else {
-//     bigValue = new BigNumber(value);
-//   }
-//   if (bigValue.isNaN() || !bigValue.isFinite()) {
-//     return '0';
-//   }
-//   if (options.precision || options.precision === 0) {
-//     let outputStr = '';
-//     if (bigValue.gte(1)) {
-//       outputStr = bigValue.toFormat(options.precision, options.roundingMode || BigNumber.ROUND_HALF_CEIL);
-//     } 
-//     else {
-//       outputStr = bigValue.toFormat(options.precision);
-//     }
-//     if (outputStr.length > 18) {
-//       outputStr = outputStr.substring(0, 18) + '...';
-//     }
-//     return outputStr;
-//   }
-//   return bigValue.toFormat();
-// }
 define("@scom/scom-counter/global/index.ts", ["require", "exports", "@scom/scom-counter/global/interfaces.ts", "@scom/scom-counter/global/utils.ts"], function (require, exports, interfaces_1, utils_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    ///<amd-module name='@scom/scom-counter/global/index.ts'/> 
     __exportStar(interfaces_1, exports);
     __exportStar(utils_1, exports);
 });
@@ -183,13 +178,15 @@ define("@scom/scom-counter/dataOptionsForm.tsx", ["require", "exports", "@ijstec
             const stringDecimal = this.getAttribute('stringDecimal', true, 0);
             const stringPrefix = this.getAttribute('stringPrefix', true, '');
             const stringSuffix = this.getAttribute('stringSuffix', true, '');
+            const groupBy = this.getAttribute('groupBy', true, {});
             this.data = {
                 options: {
                     counterColName,
                     counterLabel,
                     stringDecimal,
                     stringPrefix,
-                    stringSuffix
+                    stringSuffix,
+                    groupBy
                 }
             };
         }
@@ -237,6 +234,21 @@ define("@scom/scom-counter/formSchema.ts", ["require", "exports"], function (req
                 stringSuffix: {
                     title: 'Suffix',
                     type: 'string'
+                },
+                groupBy: {
+                    type: 'object',
+                    properties: {
+                        field: {
+                            type: 'string',
+                            enum: ['', ...columns]
+                        },
+                        keyValue: {
+                            type: 'string'
+                        },
+                        average: {
+                            type: 'boolean'
+                        }
+                    }
                 }
             }
         };
@@ -781,7 +793,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             if (!this.counterElm && this._data.options)
                 return;
             const { title, description } = this._data;
-            const { counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, coloredNegativeValues, coloredPositiveValues } = ((_a = this._data) === null || _a === void 0 ? void 0 : _a.options) || {};
+            const { counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, groupBy } = ((_a = this._data) === null || _a === void 0 ? void 0 : _a.options) || {};
             this.lbTitle.caption = title;
             this.lbDescription.caption = description;
             this.lbDescription.visible = !!description;
@@ -790,7 +802,16 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                 return;
             this.counterElm.clearInnerHTML();
             if (this.counterData && this.counterData.length) {
-                const value = this.counterData[0][counterColName];
+                let value;
+                if (groupBy && groupBy.field && groupBy.keyValue) {
+                    const groupData = (0, index_1.groupDataByField)(this.counterData, groupBy.field, groupBy.keyValue);
+                    value = groupBy.average ? (0, index_1.getAverageValue)(groupData, counterColName) : groupData.length ? groupData[0][counterColName] : '';
+                }
+                else {
+                    value = this.counterData[0][counterColName];
+                }
+                if (value === undefined)
+                    value = '';
                 const isNumber = (0, index_1.isNumeric)(value);
                 let _number = isNumber ? new eth_wallet_2.BigNumber(value).dividedBy(100) : new eth_wallet_2.BigNumber(0);
                 const lbValue = new components_4.Label(this.counterElm, {

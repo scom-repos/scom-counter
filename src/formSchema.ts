@@ -24,6 +24,21 @@ function visualizationOptions(columns: string[]) {
             stringSuffix: {
                 title: 'Suffix',
                 type: 'string'
+            },
+            groupBy: {
+                type: 'object',
+                properties: {
+                    field: {
+                        type: 'string',
+                        enum: ['', ...columns]
+                    },
+                    keyValue: {
+                        type: 'string'
+                    },
+                    average: {
+                        type: 'boolean'
+                    }
+                }
             }
         }
     }
