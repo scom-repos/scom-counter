@@ -92,13 +92,15 @@ export default class ScomCounterDataOptionsForm extends Module {
         const stringDecimal = this.getAttribute('stringDecimal', true, 0)
         const stringPrefix = this.getAttribute('stringPrefix', true, '')
         const stringSuffix = this.getAttribute('stringSuffix', true, '')
+        const groupBy = this.getAttribute('groupBy', true, {})
         this.data = {
             options: {
                 counterColName,
                 counterLabel,
                 stringDecimal,
                 stringPrefix,
-                stringSuffix
+                stringSuffix,
+                groupBy
             }
         }
     }

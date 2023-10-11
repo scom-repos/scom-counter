@@ -14,7 +14,7 @@ import {
   IUISchema,
   FormatUtils
 } from '@ijstech/components';
-import { ICounterConfig, isNumeric, ICounterOptions } from './global/index';
+import { ICounterConfig, isNumeric, ICounterOptions, groupDataByField, getAverageValue } from './global/index';
 import { containerStyle, counterStyle, textStyle } from './index.css';
 import assets from './assets';
 import dataJson from './data.json';
@@ -407,7 +407,7 @@ export default class ScomCounter extends Module {
   private async renderCounter(resize?: boolean) {
     if (!this.counterElm && this._data.options) return;
     const { title, description } = this._data;
-    const { counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, coloredNegativeValues, coloredPositiveValues } = this._data?.options || {};
+    const { counterColName, counterLabel, stringDecimal, stringPrefix, stringSuffix, groupBy } = this._data?.options || {};
     this.lbTitle.caption = title;
     this.lbDescription.caption = description;
     this.lbDescription.visible = !!description;
@@ -415,7 +415,14 @@ export default class ScomCounter extends Module {
     if (resize) return;
     this.counterElm.clearInnerHTML();
     if (this.counterData && this.counterData.length) {
-      const value = this.counterData[0][counterColName];
+      let value: number | string;
+      if (groupBy && groupBy.field && groupBy.keyValue) {
+        const groupData = groupDataByField(this.counterData, groupBy.field, groupBy.keyValue);
+        value = groupBy.average ? getAverageValue(groupData, counterColName) : groupData.length ? groupData[0][counterColName] : '';
+      } else {
+        value = this.counterData[0][counterColName];
+      }
+      if (value === undefined) value = '';
       const isNumber = isNumeric(value);
       let _number = isNumber ? new BigNumber(value).dividedBy(100) : new BigNumber(0);
       const lbValue = new Label(this.counterElm, {

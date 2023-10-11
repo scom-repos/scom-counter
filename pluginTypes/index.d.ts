@@ -8,6 +8,11 @@ declare module "@scom/scom-counter/global/interfaces.ts" {
         stringDecimal?: number;
         stringPrefix?: string;
         stringSuffix?: string;
+        groupBy?: {
+            field: string;
+            keyValue: string;
+            average?: boolean;
+        };
         coloredPositiveValues?: boolean;
         coloredNegativeValues?: boolean;
     }
@@ -33,25 +38,15 @@ declare module "@scom/scom-counter/global/interfaces.ts" {
 declare module "@scom/scom-counter/global/utils.ts" {
     import { BigNumber } from '@ijstech/eth-wallet';
     export const isNumeric: (value: string | number | BigNumber) => boolean;
+    export const groupDataByField: (arr: {
+        [key: string]: any;
+    }[], field: string, key: string) => any[];
+    export const getAverageValue: (arr: {
+        [key: string]: any;
+    }[], key: string) => number;
 }
 /// <amd-module name="@scom/scom-counter/global/index.ts" />
 declare module "@scom/scom-counter/global/index.ts" {
-    export interface PageBlock {
-        getData: () => any;
-        setData: (data: any) => Promise<void>;
-        getTag: () => any;
-        setTag: (tag: any) => Promise<void>;
-        validate?: () => boolean;
-        defaultEdit?: boolean;
-        tag?: any;
-        readonly onEdit: () => Promise<void>;
-        readonly onConfirm: () => Promise<void>;
-        readonly onDiscard: () => Promise<void>;
-        edit: () => Promise<void>;
-        confirm: () => Promise<void>;
-        discard: () => Promise<void>;
-        config: () => Promise<void>;
-    }
     export * from "@scom/scom-counter/global/interfaces.ts";
     export * from "@scom/scom-counter/global/utils.ts";
 }
@@ -232,6 +227,21 @@ declare module "@scom/scom-counter/formSchema.ts" {
                             stringSuffix: {
                                 title: string;
                                 type: string;
+                            };
+                            groupBy: {
+                                type: string;
+                                properties: {
+                                    field: {
+                                        type: string;
+                                        enum: string[];
+                                    };
+                                    keyValue: {
+                                        type: string;
+                                    };
+                                    average: {
+                                        type: string;
+                                    };
+                                };
                             };
                         };
                     };

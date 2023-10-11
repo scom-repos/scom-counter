@@ -1,5 +1,5 @@
 import { BigNumber } from "@ijstech/eth-wallet";
-import { DataSource, ModeType } from "@scom/scom-chart-data-source-setup"
+import { ModeType } from "@scom/scom-chart-data-source-setup"
 
 export interface ICounterOptions {
   counterColName: string,
@@ -7,6 +7,11 @@ export interface ICounterOptions {
   stringDecimal?: number,
   stringPrefix?: string,
   stringSuffix?: string,
+  groupBy?: {
+    field: string,
+    keyValue: string,
+    average?: boolean
+  },
   coloredPositiveValues?: boolean,
   coloredNegativeValues?: boolean
 }
