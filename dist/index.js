@@ -861,7 +861,6 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             this.renderCounter(true);
         }
         async init() {
-            this.isReadyCallbackQueued = true;
             super.init();
             this.setTag({
                 counterNumberColor: currentTheme.colors.primary.main,
@@ -879,7 +878,6 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     this.setData(data);
                 }
             }
-            this.isReadyCallbackQueued = false;
             this.executeReadyCallback();
             window.addEventListener('resize', () => {
                 setTimeout(() => {
