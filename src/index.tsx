@@ -459,7 +459,6 @@ export default class ScomCounter extends Module {
   }
 
   async init() {
-    this.isReadyCallbackQueued = true;
     super.init();
     this.setTag({
       counterNumberColor: currentTheme.colors.primary.main,
@@ -477,7 +476,6 @@ export default class ScomCounter extends Module {
         this.setData(data);
       }
     }
-    this.isReadyCallbackQueued = false;
     this.executeReadyCallback();
     window.addEventListener('resize', () => {
       setTimeout(() => {
