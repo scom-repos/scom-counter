@@ -556,99 +556,7 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     userInputDataSchema: dataSchema,
                     userInputUISchema: uiSchema
                 },
-                {
-                    name: 'Data',
-                    icon: 'database',
-                    command: (builder, userInputData) => {
-                        let _oldData = DefaultData;
-                        return {
-                            execute: async () => {
-                                _oldData = { ...this._data };
-                                if (userInputData?.mode)
-                                    this._data.mode = userInputData?.mode;
-                                if (userInputData?.file)
-                                    this._data.file = userInputData?.file;
-                                if (userInputData?.dataSource)
-                                    this._data.dataSource = userInputData?.dataSource;
-                                if (userInputData?.queryId)
-                                    this._data.queryId = userInputData?.queryId;
-                                if (userInputData?.apiEndpoint)
-                                    this._data.apiEndpoint = userInputData?.apiEndpoint;
-                                if (userInputData?.options !== undefined)
-                                    this._data.options = userInputData.options;
-                                if (builder?.setData)
-                                    builder.setData(this._data);
-                                this.setData(this._data);
-                            },
-                            undo: () => {
-                                if (builder?.setData)
-                                    builder.setData(_oldData);
-                                this.setData(_oldData);
-                            },
-                            redo: () => { }
-                        };
-                    },
-                    customUI: {
-                        render: async (data, onConfirm, onChange) => {
-                            const vstack = new components_4.VStack(null, { gap: '1rem' });
-                            const dataSourceSetup = new scom_chart_data_source_setup_1.default(null, {
-                                ...this._data,
-                                chartData: JSON.stringify(this.counterData),
-                                onCustomDataChanged: async (dataSourceSetupData) => {
-                                    if (onChange) {
-                                        onChange(true, {
-                                            ...this._data,
-                                            ...dataSourceSetupData
-                                        });
-                                    }
-                                }
-                            });
-                            const hstackBtnConfirm = new components_4.HStack(null, {
-                                verticalAlignment: 'center',
-                                horizontalAlignment: 'end'
-                            });
-                            const button = new components_4.Button(null, {
-                                caption: 'Confirm',
-                                width: 'auto',
-                                height: 40,
-                                font: { color: Theme.colors.primary.contrastText }
-                            });
-                            hstackBtnConfirm.append(button);
-                            vstack.append(dataSourceSetup);
-                            const dataOptionsForm = new dataOptionsForm_1.default(null, {
-                                ...this._data.options,
-                                jsonSchema: advancedSchema,
-                            });
-                            vstack.append(dataOptionsForm);
-                            vstack.append(hstackBtnConfirm);
-                            if (onChange) {
-                                dataOptionsForm.onCustomInputChanged = async (optionsFormData) => {
-                                    onChange(true, {
-                                        ...this._data,
-                                        ...optionsFormData,
-                                        ...dataSourceSetup.data
-                                    });
-                                };
-                            }
-                            button.onClick = async () => {
-                                const { dataSource, file, mode } = dataSourceSetup.data;
-                                if (mode === scom_chart_data_source_setup_1.ModeType.LIVE && !dataSource)
-                                    return;
-                                if (mode === scom_chart_data_source_setup_1.ModeType.SNAPSHOT && !file?.cid)
-                                    return;
-                                if (onConfirm) {
-                                    const optionsFormData = await dataOptionsForm.refreshFormData();
-                                    onConfirm(true, {
-                                        ...this._data,
-                                        ...optionsFormData,
-                                        ...dataSourceSetup.data
-                                    });
-                                }
-                            };
-                            return vstack;
-                        }
-                    }
-                }
+                this._getDataAction(dataSchema, uiSchema, advancedSchema)
             ];
             // if (advancedSchema) {
             //   const advanced = {
@@ -676,6 +584,102 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             //   actions.push(advanced);
             // }
             return actions;
+        }
+        _getDataAction(dataSchema, uiSchema, advancedSchema) {
+            return {
+                name: 'Data',
+                icon: 'database',
+                command: (builder, userInputData) => {
+                    let _oldData = DefaultData;
+                    return {
+                        execute: async () => {
+                            _oldData = { ...this._data };
+                            if (userInputData?.mode)
+                                this._data.mode = userInputData?.mode;
+                            if (userInputData?.file)
+                                this._data.file = userInputData?.file;
+                            if (userInputData?.dataSource)
+                                this._data.dataSource = userInputData?.dataSource;
+                            if (userInputData?.queryId)
+                                this._data.queryId = userInputData?.queryId;
+                            if (userInputData?.apiEndpoint)
+                                this._data.apiEndpoint = userInputData?.apiEndpoint;
+                            if (userInputData?.options !== undefined)
+                                this._data.options = userInputData.options;
+                            if (builder?.setData)
+                                builder.setData(this._data);
+                            this.setData(this._data);
+                        },
+                        undo: () => {
+                            if (builder?.setData)
+                                builder.setData(_oldData);
+                            this.setData(_oldData);
+                        },
+                        redo: () => { }
+                    };
+                },
+                customUI: {
+                    render: async (data, onConfirm, onChange) => {
+                        const vstack = new components_4.VStack(null, { gap: '1rem' });
+                        const dataSourceSetup = new scom_chart_data_source_setup_1.default(null, {
+                            ...this._data,
+                            chartData: JSON.stringify(this.counterData),
+                            onCustomDataChanged: async (dataSourceSetupData) => {
+                                if (onChange) {
+                                    onChange(true, {
+                                        ...this._data,
+                                        ...dataSourceSetupData
+                                    });
+                                }
+                            }
+                        });
+                        const hstackBtnConfirm = new components_4.HStack(null, {
+                            verticalAlignment: 'center',
+                            horizontalAlignment: 'end'
+                        });
+                        const button = new components_4.Button(null, {
+                            caption: 'Confirm',
+                            width: 'auto',
+                            height: 40,
+                            font: { color: Theme.colors.primary.contrastText },
+                            padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }
+                        });
+                        hstackBtnConfirm.append(button);
+                        vstack.append(dataSourceSetup);
+                        const dataOptionsForm = new dataOptionsForm_1.default(null, {
+                            ...this._data.options,
+                            jsonSchema: advancedSchema,
+                        });
+                        vstack.append(dataOptionsForm);
+                        vstack.append(hstackBtnConfirm);
+                        if (onChange) {
+                            dataOptionsForm.onCustomInputChanged = async (optionsFormData) => {
+                                onChange(true, {
+                                    ...this._data,
+                                    ...optionsFormData,
+                                    ...dataSourceSetup.data
+                                });
+                            };
+                        }
+                        button.onClick = async () => {
+                            const { dataSource, file, mode } = dataSourceSetup.data;
+                            if (mode === scom_chart_data_source_setup_1.ModeType.LIVE && !dataSource)
+                                return;
+                            if (mode === scom_chart_data_source_setup_1.ModeType.SNAPSHOT && !file?.cid)
+                                return;
+                            if (onConfirm) {
+                                const optionsFormData = await dataOptionsForm.refreshFormData();
+                                onConfirm(true, {
+                                    ...this._data,
+                                    ...optionsFormData,
+                                    ...dataSourceSetup.data
+                                });
+                            }
+                        };
+                        return vstack;
+                    }
+                }
+            };
         }
         getConfigurators() {
             const self = this;
@@ -729,6 +733,21 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
                     setData: this.setData.bind(this),
                     getTag: this.getTag.bind(this),
                     setTag: this.setTag.bind(this)
+                },
+                {
+                    name: 'Editor',
+                    target: 'Editor',
+                    getActions: () => {
+                        const builderSchema = (0, formSchema_1.getBuilderSchema)(this.columnNames);
+                        const dataSchema = builderSchema.dataSchema;
+                        const uiSchema = builderSchema.uiSchema;
+                        const advancedSchema = builderSchema.advanced.dataSchema;
+                        return [
+                            this._getDataAction(dataSchema, uiSchema, advancedSchema),
+                        ];
+                    },
+                    getData: this.getData.bind(this),
+                    setData: this.setData.bind(this)
                 }
             ];
         }
@@ -750,12 +769,14 @@ define("@scom/scom-counter", ["require", "exports", "@ijstech/components", "@sco
             this.updateTheme();
         }
         async updateCounterData() {
-            this.loadingElm.visible = true;
+            if (this.loadingElm)
+                this.loadingElm.visible = true;
             if (this._data?.mode === scom_chart_data_source_setup_1.ModeType.SNAPSHOT)
                 await this.renderSnapshotData();
             else
                 await this.renderLiveData();
-            this.loadingElm.visible = false;
+            if (this.loadingElm)
+                this.loadingElm.visible = false;
         }
         async renderSnapshotData() {
             if (this._data.file?.cid) {

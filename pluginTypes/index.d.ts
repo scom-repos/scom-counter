@@ -366,6 +366,7 @@ declare module "@scom/scom-counter" {
         private getTag;
         private setTag;
         private _getActions;
+        private _getDataAction;
         getConfigurators(): ({
             name: string;
             target: string;
@@ -377,9 +378,9 @@ declare module "@scom/scom-counter" {
                     undo: () => void;
                     redo: () => void;
                 };
-                userInputDataSchema: IDataSchema;
-                userInputUISchema: IUISchema;
-                customUI?: undefined;
+                customUI: {
+                    render: (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => Promise<VStack>;
+                };
             } | {
                 name: string;
                 icon: string;
@@ -388,11 +389,8 @@ declare module "@scom/scom-counter" {
                     undo: () => void;
                     redo: () => void;
                 };
-                customUI: {
-                    render: (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => Promise<VStack>;
-                };
-                userInputDataSchema?: undefined;
-                userInputUISchema?: undefined;
+                userInputDataSchema: IDataSchema;
+                userInputUISchema: IUISchema;
             })[];
             getData: any;
             setData: (data: ICounterConfig) => Promise<void>;
@@ -411,10 +409,32 @@ declare module "@scom/scom-counter" {
                     undo: () => void;
                     redo: () => void;
                 };
+                customUI: {
+                    render: (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => Promise<VStack>;
+                };
+            } | {
+                name: string;
+                icon: string;
+                command: (builder: any, userInputData: any) => {
+                    execute: () => Promise<void>;
+                    undo: () => void;
+                    redo: () => void;
+                };
                 userInputDataSchema: IDataSchema;
                 userInputUISchema: IUISchema;
-                customUI?: undefined;
-            } | {
+            })[];
+            getLinkParams: () => {
+                data: string;
+            };
+            setLinkParams: (params: any) => Promise<void>;
+            getData: any;
+            setData: any;
+            getTag: any;
+            setTag: any;
+        } | {
+            name: string;
+            target: string;
+            getActions: () => {
                 name: string;
                 icon: string;
                 command: (builder: any, userInputData: any) => {
@@ -425,17 +445,13 @@ declare module "@scom/scom-counter" {
                 customUI: {
                     render: (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => Promise<VStack>;
                 };
-                userInputDataSchema?: undefined;
-                userInputUISchema?: undefined;
-            })[];
-            getLinkParams: () => {
-                data: string;
-            };
-            setLinkParams: (params: any) => Promise<void>;
+            }[];
             getData: any;
             setData: any;
-            getTag: any;
-            setTag: any;
+            getTag?: undefined;
+            setTag?: undefined;
+            getLinkParams?: undefined;
+            setLinkParams?: undefined;
         })[];
         private updateStyle;
         private updateTheme;
