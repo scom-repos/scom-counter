@@ -160,90 +160,7 @@ export default class ScomCounter extends Module {
         userInputDataSchema: dataSchema,
         userInputUISchema: uiSchema
       },
-      {
-        name: 'Data',
-        icon: 'database',
-        command: (builder: any, userInputData: any) => {
-          let _oldData: ICounterConfig = DefaultData;
-          return {
-            execute: async () => {
-              _oldData = { ...this._data };
-              if (userInputData?.mode) this._data.mode = userInputData?.mode;
-              if (userInputData?.file) this._data.file = userInputData?.file;
-              if (userInputData?.dataSource) this._data.dataSource = userInputData?.dataSource;
-              if (userInputData?.queryId) this._data.queryId = userInputData?.queryId;
-              if (userInputData?.apiEndpoint) this._data.apiEndpoint = userInputData?.apiEndpoint;
-              if (userInputData?.options !== undefined) this._data.options = userInputData.options;
-              if (builder?.setData) builder.setData(this._data);
-              this.setData(this._data);
-            },
-            undo: () => {
-              if (builder?.setData) builder.setData(_oldData);
-              this.setData(_oldData);
-            },
-            redo: () => { }
-          }
-        },
-        customUI: {
-          render: async (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => {
-            const vstack = new VStack(null, { gap: '1rem' });
-            const dataSourceSetup = new ScomChartDataSourceSetup(null, {
-              ...this._data,
-              chartData: JSON.stringify(this.counterData),
-              onCustomDataChanged: async (dataSourceSetupData: any) => {
-                if (onChange) {
-                  onChange(true, {
-                    ...this._data,
-                    ...dataSourceSetupData
-                  });
-                }
-              }
-            });
-            const hstackBtnConfirm = new HStack(null, {
-              verticalAlignment: 'center',
-              horizontalAlignment: 'end'
-            });
-            const button = new Button(null, {
-              caption: 'Confirm',
-              width: 'auto',
-              height: 40,
-              font: { color: Theme.colors.primary.contrastText }
-            });
-            hstackBtnConfirm.append(button);
-            vstack.append(dataSourceSetup);
-            const dataOptionsForm = new ScomCounterDataOptionsForm(null, {
-              ...this._data.options,
-              jsonSchema: advancedSchema,
-            });
-            vstack.append(dataOptionsForm);
-            vstack.append(hstackBtnConfirm);
-            if (onChange) {
-              dataOptionsForm.onCustomInputChanged = async (optionsFormData: any) => {
-                onChange(true, {
-                  ...this._data,
-                  ...optionsFormData,
-                  ...dataSourceSetup.data
-                });
-              }
-            }
-            button.onClick = async () => {
-              const { dataSource, file, mode } = dataSourceSetup.data;
-              if (mode === ModeType.LIVE && !dataSource) return;
-              if (mode === ModeType.SNAPSHOT && !file?.cid) return;
-              if (onConfirm) {
-                const optionsFormData = await dataOptionsForm.refreshFormData();
-                onConfirm(true, {
-                  ...this._data,
-                  ...optionsFormData,
-                  ...dataSourceSetup.data
-                });
-              }
-            }
-
-            return vstack;
-          }
-        }
-      }
+      this._getDataAction(dataSchema, uiSchema, advancedSchema)
     ]
     // if (advancedSchema) {
     //   const advanced = {
@@ -271,6 +188,94 @@ export default class ScomCounter extends Module {
     //   actions.push(advanced);
     // }
     return actions
+  }
+
+  private _getDataAction(dataSchema: IDataSchema, uiSchema: IUISchema, advancedSchema?: IDataSchema) {
+    return  {
+      name: 'Data',
+      icon: 'database',
+      command: (builder: any, userInputData: any) => {
+        let _oldData: ICounterConfig = DefaultData;
+        return {
+          execute: async () => {
+            _oldData = { ...this._data };
+            if (userInputData?.mode) this._data.mode = userInputData?.mode;
+            if (userInputData?.file) this._data.file = userInputData?.file;
+            if (userInputData?.dataSource) this._data.dataSource = userInputData?.dataSource;
+            if (userInputData?.queryId) this._data.queryId = userInputData?.queryId;
+            if (userInputData?.apiEndpoint) this._data.apiEndpoint = userInputData?.apiEndpoint;
+            if (userInputData?.options !== undefined) this._data.options = userInputData.options;
+            if (builder?.setData) builder.setData(this._data);
+            this.setData(this._data);
+          },
+          undo: () => {
+            if (builder?.setData) builder.setData(_oldData);
+            this.setData(_oldData);
+          },
+          redo: () => { }
+        }
+      },
+      customUI: {
+        render: async (data?: any, onConfirm?: (result: boolean, data: any) => void, onChange?: (result: boolean, data: any) => void) => {
+          const vstack = new VStack(null, { gap: '1rem' });
+          const dataSourceSetup = new ScomChartDataSourceSetup(null, {
+            ...this._data,
+            chartData: JSON.stringify(this.counterData),
+            onCustomDataChanged: async (dataSourceSetupData: any) => {
+              if (onChange) {
+                onChange(true, {
+                  ...this._data,
+                  ...dataSourceSetupData
+                });
+              }
+            }
+          });
+          const hstackBtnConfirm = new HStack(null, {
+            verticalAlignment: 'center',
+            horizontalAlignment: 'end'
+          });
+          const button = new Button(null, {
+            caption: 'Confirm',
+            width: 'auto',
+            height: 40,
+            font: { color: Theme.colors.primary.contrastText },
+            padding: { top: '0.5rem', bottom: '0.5rem', left: '1rem', right: '1rem' }
+          });
+          hstackBtnConfirm.append(button);
+          vstack.append(dataSourceSetup);
+          const dataOptionsForm = new ScomCounterDataOptionsForm(null, {
+            ...this._data.options,
+            jsonSchema: advancedSchema,
+          });
+          vstack.append(dataOptionsForm);
+          vstack.append(hstackBtnConfirm);
+          if (onChange) {
+            dataOptionsForm.onCustomInputChanged = async (optionsFormData: any) => {
+              onChange(true, {
+                ...this._data,
+                ...optionsFormData,
+                ...dataSourceSetup.data
+              });
+            }
+          }
+          button.onClick = async () => {
+            const { dataSource, file, mode } = dataSourceSetup.data;
+            if (mode === ModeType.LIVE && !dataSource) return;
+            if (mode === ModeType.SNAPSHOT && !file?.cid) return;
+            if (onConfirm) {
+              const optionsFormData = await dataOptionsForm.refreshFormData();
+              onConfirm(true, {
+                ...this._data,
+                ...optionsFormData,
+                ...dataSourceSetup.data
+              });
+            }
+          }
+
+          return vstack;
+        }
+      }
+    }
   }
 
   getConfigurators() {
@@ -325,6 +330,21 @@ export default class ScomCounter extends Module {
         setData: this.setData.bind(this),
         getTag: this.getTag.bind(this),
         setTag: this.setTag.bind(this)
+      },
+      {
+        name: 'Editor',
+        target: 'Editor',
+        getActions: () => {
+          const builderSchema = getBuilderSchema(this.columnNames);
+          const dataSchema = builderSchema.dataSchema as IDataSchema;
+          const uiSchema = builderSchema.uiSchema as IUISchema;
+          const advancedSchema = builderSchema.advanced.dataSchema as IDataSchema;
+          return [
+            this._getDataAction(dataSchema, uiSchema, advancedSchema),
+          ]
+        },
+        getData: this.getData.bind(this),
+        setData: this.setData.bind(this)
       }
     ]
   }
@@ -350,12 +370,14 @@ export default class ScomCounter extends Module {
   }
 
   private async updateCounterData() {
-    this.loadingElm.visible = true;
+    if (this.loadingElm)
+      this.loadingElm.visible = true;
     if (this._data?.mode === ModeType.SNAPSHOT)
       await this.renderSnapshotData();
     else
       await this.renderLiveData();
-    this.loadingElm.visible = false;
+    if (this.loadingElm)
+      this.loadingElm.visible = false;
   }
 
   private async renderSnapshotData() {
